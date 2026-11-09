@@ -42,6 +42,7 @@
     - [9.5 Priming and Loading the PromethION Flow Cell](#95-priming-and-loading-the-promethion-flow-cell)
     - [9.6 MinKNOW Run Configuration and Data Generation](#96-minknow-run-configuration-and-data-generation)
     - [9.7 From FASTQ to Biological Interpretation (`wf-16s` Walkthrough)](#97-from-fastq-to-biological-interpretation-wf-16s-walkthrough)
+    - [9.8 Guided Practical Checkpoint: Five Critical Decisions (H8)](#98-guided-practical-checkpoint-five-critical-decisions-h8)
 - [Part C – Bioinformatics](#part-c--bioinformatics)
   - [Chapter 10. Nanopore Data Formats and Basecalling](#chapter-10-nanopore-data-formats-and-basecalling)
   - [Chapter 11. Quality Control and Taxonomic Assignment](#chapter-11-quality-control-and-taxonomic-assignment)
@@ -174,6 +175,8 @@ Selecting the proper molecular marker dictates the taxonomic breadth and phyloge
 
 The 16S rRNA gene (~1,542 bp in *E. coli*) consists of nine hypervariable regions (V1 through V9) interspersed between conserved structural stems. Traditional short-read platforms typically sequence isolated sub-regions, such as V3–V4 (primers 341F / 805R, ~464 bp) or V4 (primers 515F / 806R, ~291 bp). While these short segments profile family- and genus-level community dynamics, they frequently lack sufficient nucleotide divergence to differentiate closely related pathogenic and commensal species (e.g. distinguishing *Bacillus anthracis* from *Bacillus cereus*, or *Escherichia coli* from *Shigella* species).
 
+Furthermore, bacterial genomes exhibit substantial 16S rRNA gene copy number variation. As documented in the rrnDB v5 database (Stoddard et al. 2015), bacterial genomes carry between 1 and 21 copies of the 16S gene, with some spore-forming bacilli (such as *Metabacillus*) exhibiting medians up to 19 copies. Additionally, intragenomic 16S divergence—where distinct operons within the same single bacterial chromosome carry divergent nucleotide sequences—can generate multiple distinct sequence variants from a clonal isolate. Researchers must account for copy number heterogeneity when interpreting sequence abundances.
+
 Nanopore sequencing enables full-length 16S sequencing (~1.5 kb) using classical primers 27F (`AGAGTTTGATCMTGGCTCAG`) and 1492R (`GGTTACCTTGTTACGACTT`). By capturing all nine variable regions in individual continuous reads, long-read sequencing significantly refines taxonomic classification to species rank.
 
 ![16S rRNA gene map and primer targets](assets/common-amplicon-markers/16S-rRNA-generated.png)  
@@ -218,7 +221,7 @@ The V4 region (~380 bp, amplified with primers TAReuk454FWD1 / TAReukREV3) and V
 
 #### 4.4 Animal and Metazoan Markers (Mitochondrial COI)
 
-Cytochrome *c* oxidase subunit I (COI) is the primary barcode for the animal kingdom (Hebert et al. 2003). The standard Folmer region (~658 bp) is amplified using primers LCO1490 and HCO2198. Due to the degeneracy of the universal primer sites across divergent invertebrate phyla, degenerate cocktails or internal mini-barcodes—such as the Leray fragment (~313 bp, amplified with mlCOIintF and jgHCO2198)—are widely used for marine benthic biodiversity and gut content analyses.
+Cytochrome *c* oxidase subunit I (COI) is the primary barcode for the animal kingdom (Hebert et al. 2003). The standard Folmer barcode region (~658 bp) is amplified using primers LCO1490 and HCO2198 (Folmer et al. 1994). Due to the degeneracy of universal primer binding sites across divergent invertebrate phyla, degenerate primer cocktails or internal mini-barcodes—such as the Leray fragment (~313 bp, amplified with mlCOIintF and jgHCO2198; Leray et al. 2013)—are widely deployed for marine benthic biodiversity and gut content metabarcoding.
 
 ![Animal COI marker map](assets/common-amplicon-markers/animal-COI-generated.png)  
 *Figure 4.6. Mitochondrial COI gene showing the standard Folmer barcode region and the shorter Leray internal metabarcoding amplicon.*
@@ -277,10 +280,10 @@ As nucleotides pass through the narrowest constriction of the pore (the reader h
 
 #### 6.2 Pore Architecture: Evolution from R9.4.1 to R10.4.1 Dual Reader Heads
 
-The evolution of ONT accuracy from ~90% in early chemistries to >99% (Q20+) today is largely driven by pore engineering. 
+The evolution of ONT accuracy from ~90% in early chemistries to >99% (Q20+) today is largely driven by pore engineering and chemistry iterations (Kit 14).
 
 * **R9.4.1 Pores:** Utilized an engineered version of the *E. coli* curli transport protein CsgG, which contains a single reader constriction. Because approximately 4–5 nucleotides occupy this constriction simultaneously, the measured current reflects a compound k-mer. In long homopolymer tracts (e.g. `AAAAAAA`), the current level remains static as the identical bases move through, causing insertion/deletion (indel) errors and homopolymer miscounting.
-* **R10.4.1 Pores:** Features an engineered longer barrel with **two distinct reader heads** spaced vertically inside the pore channel. As a DNA strand translocates, nucleotides are read consecutively by both constrictions at slightly shifted intervals. This dual-sensing mechanism breaks the homopolymer degeneracy, vastly improving raw read accuracy, resolving homopolymers beyond 10 bp, and delivering modal raw simplex read accuracies exceeding Q20 (99%).
+* **R10.4.1 Pores:** Features an engineered longer barrel with **two distinct reader heads** spaced vertically inside the pore channel (~1.4 nm apart). As a DNA strand translocates, nucleotides are read consecutively by both constrictions at slightly shifted intervals. This dual-sensing mechanism breaks the homopolymer degeneracy, vastly improving raw read accuracy and resolving homopolymers accurately up to ~9–10 bp (with indel rates increasing only beyond 10–12 bp). When paired with Kit 14 chemistry and Dorado Super-Accuracy (SUP) neural network basecalling models, modal raw simplex read accuracies exceed Q20 (~99.0–99.3%), while duplex sequencing achieves >Q25 (>99.7%).
 
 ![R9 versus R10 nanopore architecture comparison](assets/ONTR9vsR10-nanopore-diagram.png)  
 *Figure 6.3. Comparison between single-constriction R9.4.1 and dual-constriction R10.4.1 nanopore barrels, illustrating how dual reader heads resolve ambiguous homopolymer current levels.*
@@ -291,9 +294,9 @@ The evolution of ONT accuracy from ~90% in early chemistries to >99% (Q20+) toda
 
 Nanopore raw ionic current traces do not exhibit a simplistic one-to-one relationship where a specific current value equals an isolated base. Instead, the signal represents a continuous, noisy time series where each instantaneous measurement is influenced by the 4–6 nucleotides situated within the reader constriction.
 
-ONT’s modern basecalling engine—**Dorado**—decodes raw signal stored in `POD5` files using deep neural network architectures:
+ONT’s modern basecalling engine—**Dorado**—decodes raw signal stored in `POD5` files using deep neural network architectures built with PyTorch:
 1. **Convolutional Neural Networks (CNNs):** Scan raw current samples to extract low-level local signal features, normalizing baseline drifts and transient pore noise.
-2. **Bi-directional Recurrent Neural Networks (RNNs) / Transformers:** Model long-range contextual temporal dependencies across adjacent current shifts.
+2. **Transformers / Recurrent Encoders:** Model long-range contextual temporal dependencies across adjacent current shifts.
 3. **Connectionist Temporal Classification (CTC) / Modified Beam Search:** Decodes hidden neural layer states into discrete nucleotide calls (`A`, `C`, `G`, `T`) while assigning a probabilistic Phred quality score ($Q$) to every individual base call.
 
 ![ONT neural network basecalling pipeline](assets/ONT-basecalling-neural-network-diagram.png)  
@@ -307,11 +310,12 @@ ONT’s modern basecalling engine—**Dorado**—decodes raw signal stored in `P
 ### Chapter 7. ONT Instrumentation and Experimental Planning
 
 #### Table 6. Oxford Nanopore sequencing platforms
-| Platform | Form Factor | Flow Cell Capacity | Active Pores per Flow Cell | Ideal Amplicon Sequencing Scope |
+| Platform | Form Factor | Flow Cell Capacity | Sensor Architecture & Active Pores | Ideal Amplicon Sequencing Scope |
 |---|---|---|---|---|
-| **MinION Mk1B / Mk1D** | Portable, USB-powered | 1 MinION / Flongle cell | 512 channels (up to 2,048 pores) | Field sequencing, point-of-care diagnostics, teaching labs, small multiplex pools |
-| **GridION** | Benchtop with onboard GPU compute | Up to 5 MinION flow cells | Up to 2,560 channels | Core facility daily throughput; parallel multi-sample barcoded amplicon runs |
-| **PromethION 2 Solo / 24 / 48** | High-throughput enterprise instrument | 2, 24, or 48 PromethION cells | 3,000 channels (~5,000 active pores) | Large-scale population surveys, massive amplicon multiplexing (thousands of samples) |
+| **Flongle** | Disposable adapter for MinION/GridION | 1 Flongle cell | 126 channels (up to 504 pores; 50-pore warranty) | Rapid single-sample checks, quality screening, teaching labs |
+| **MinION Mk1B / Mk1D** | Portable, USB-powered | 1 MinION flow cell | 512 channels (up to 2,048 pores; 800-pore warranty minimum) | Field sequencing, point-of-care diagnostics, modest multiplex pools |
+| **GridION** | Benchtop with onboard GPU compute | Up to 5 MinION flow cells | Up to 2,560 channels (5 × 512 channels) | Core facility daily throughput; parallel multi-sample barcoded amplicon runs |
+| **PromethION 2 Solo / 24 / 48** | High-throughput enterprise instrument | 2, 24, or 48 PromethION cells | 3,000 channels (addressing 12,000 pores; 5,000-pore warranty minimum) | Large-scale population surveys, massive amplicon multiplexing (thousands of samples) |
 
 #### Experimental Planning Guidelines
 * **Sample Multiplexing:** Native Barcoding Kit 24 V14 provides 24 unique barcodes (`NB01`–`NB24`), enabling 24 distinct samples per flow cell `[MFR]`.
@@ -448,9 +452,9 @@ Amplify marker targets using high-fidelity, proofreading DNA polymerases. Mainta
 1. Carefully log barcode assignments in the sample tracking sheet (Appendix B). Native barcode vials are single-use.
 2. Combine components in the order listed; mix by pipetting 10–20 times.
 3. Incubate at room temperature (**20–25 °C**) for **20 minutes**.
-4. Add **4 µL of 0.2 M EDTA** to each tube and mix thoroughly to quench ligase activity.
+4. Add **4 µL EDTA (blue cap)** to each tube and mix thoroughly to quench ligase activity *(Note: if sourcing EDTA independently, use 0.25 M)*.
 5. **Pool all reactions** into a single 1.5 mL LoBind tube.
-6. Perform magnetic bead purification using a **0.4× AMPure XP ratio** (see Table 12).
+6. Perform magnetic bead purification using a **0.4× AMPure XP ratio** (see Table 12). *(Note: both this pooling clean-up and the subsequent post-adapter clean-up employ a 0.4× bead ratio, which strongly selects against fragments <1 kb; see Table 25 for short amplicon adaptations)*.
 7. Wash the pooled pellet twice using **700 µL Short Fragment Buffer (SFB)**. *Do not use ethanol.*
 8. Resuspend pellet in **35 µL nuclease-free water**, incubate at 37 °C for 10 minutes, pellet on magnet, and transfer the 35 µL pooled library eluate to a clean tube.
 
@@ -489,7 +493,7 @@ Amplify marker targets using high-fidelity, proofreading DNA polymerases. Mainta
 #### Table 14. Wash buffer selection criteria `[MFR]`
 | Wash Buffer | Fragment Size Retention | Protocol Guidance |
 |---|---|---|
-| **Short Fragment Buffer (SFB)** | Retains fragments of all sizes down to ~150 bp | Mandatory for full-length 16S amplicons (~1.5 kb) and shorter targets |
+| **Short Fragment Buffer (SFB)** | Retains all bead-bound DNA fragments without size stripping | Mandatory for full-length 16S amplicons (~1.5 kb) and shorter targets; size floor is dictated by the bead ratio |
 | **Long Fragment Buffer (LFB)** | Selectively enriches fragments $\ge 3\text{ kb}$ | Used strictly for genomic DNA libraries; severely depletes amplicons |
 
 > [!WARNING]
@@ -537,12 +541,12 @@ Amplify marker targets using high-fidelity, proofreading DNA polymerases. Mainta
 7. Introduce the second **500 µL of priming mix**.
 8. Gently load the **200 µL library loading mix** through the inlet port.
 9. Close the inlet port cover. Fit the PromethION Light Shield over the flow cell window and close the instrument lid.
-10. Wait 10 minutes before starting the sequencing run in MinKNOW to allow the library to tether to the membrane.
+10. Wait at least 10 minutes before starting the sequencing run in MinKNOW; this rest period increases overall sequencing output and pore availability across channels.
 
 #### Table 18. Physical failure modes and troubleshooting `[MFR]`
 | Observed Failure | Biological / Physical Cause | Corrective Action |
 |---|---|---|
-| **Air bubble introduced into array** | Irreversible physical destruction of active lipid bilayer membranes | Always draw back a small volume before loading; dispense priming mix smoothly without introducing bubbles |
+| **Air bubble introduced into array** | Irreversible physical destruction of pores and synthetic polymer membranes | Always draw back a small volume before loading; dispense priming mix smoothly without introducing bubbles |
 | **Pore occupancy near 0%** | Flow Cell Tether (FCT) omitted, or ethanol used in adapter clean-up | Always add FCT to FCF priming mix; ensure only SFB is used after adapter ligation |
 | **Low sequencing pore occupancy (<40%)** | Under-loaded library or settled Library Beads | Accurately quantify library via Qubit; vortex LIB vigorously immediately before mixing |
 | **Rapid pore degradation during run** | Chemical contaminant carryover (phenol, polysaccharides) | Re-purify amplicons with an additional bead wash; execute a Nuclease Flush (`EXP-WSH004`) |
@@ -553,11 +557,17 @@ Amplify marker targets using high-fidelity, proofreading DNA polymerases. Mainta
 
 MinKNOW coordinates real-time data acquisition, voltage control, and neural network basecalling.
 
+![MinKNOW run configuration interface](assets/software-screenshots/MinKNOW-sequencing-run-configuration1.jpeg)  
+*Figure 9.6. MinKNOW sequencing run configuration screen showing flow cell chemistry selection, kit selection (SQK-NBD114.24), and real-time basecalling model configuration.*
+
 1. **Start Sequencing:** Navigate to the **Start** tab, select the flow cell position, enter the Experiment Name and Sample ID, and confirm flow cell chemistry (`FLO-PRO114M`).
 2. **Kit Selection:** Select **Native Barcoding Kit 24 V14 (`SQK-NBD114.24`)**. Selecting this kit configures MinKNOW to demultiplex reads automatically during acquisition.
 3. **Run Options:** Set sequencing duration (typically 24–48 hours, or stop manually when sufficient reads are collected) and minimum read length filter (e.g. 200 bp).
 4. **Basecalling Settings:** Enable real-time basecalling. Select High Accuracy (HAC) or Super Accuracy (SUP) models depending on local GPU compute capacity. Enable barcode trimming and mid-read barcode filtering.
 5. **Output Formats:** Select `POD5` for raw electrical current storage and `FASTQ` for basecalled reads with per-base quality scores.
+
+![MinKNOW sequencing run dashboard](assets/software-screenshots/MinKNOW-sequencing-run-dashboard.jpeg)  
+*Figure 9.7. MinKNOW active sequencing dashboard displaying real-time pore occupancy, channel activity states, cumulative throughput, and Phred quality score distributions.*
 
 ---
 
@@ -565,11 +575,33 @@ MinKNOW coordinates real-time data acquisition, voltage control, and neural netw
 
 EPI2ME `wf-16s` is the official Nextflow bioinformatics pipeline developed by Oxford Nanopore for microbial amplicon analysis. It accepts demultiplexed FASTQ files and executes quality filtering, taxonomic assignment, and interactive HTML reporting.
 
+![EPI2ME workflow selection](assets/software-screenshots/EPI2ME-workflow-selection.jpeg)  
+*Figure 9.8. EPI2ME desktop application interface showing available automated workflows including 16S/18S amplicon analysis, metagenomics, and quality control pipelines.*
+
+![EPI2ME wf-16s configuration parameters](assets/software-screenshots/wf16s-run-start-page.jpeg)  
+*Figure 9.9. Parameter setup screen for wf-16s detailing classifier selection (minimap2 vs. Kraken2), reference database configuration, and read-length filtering windows.*
+
 #### Pipeline Parameters
 * **`classifier`:** Choose between `minimap2` (pairwise reference alignment, recommended for fine species resolution) or `kraken2` (k-mer matching with Bracken abundance re-estimation, faster execution).
 * **`database_set`:** Default is `ncbi_16s_18s` (updated NCBI targeted loci covering bacteria, archaea, and fungi). For fungal ITS amplicons, change to `ncbi_16s_18s_28s_ITS`.
-* **Read-Length Filtering:** Default `min_len` is 800 bp and `max_len` is 2,000 bp. For short amplicons (e.g. fungal ITS or fish 12S), `min_len` must be adjusted downward (e.g. 300 bp or 100 bp).
+* **Database Limitation Warning:** The `ncbi_16s_18s` database does **not** contain vertebrate mitochondrial 12S sequences. If analyzing fish 12S eDNA, simply lowering `min_len` will result in 100% unclassified reads. Researchers must either provide a custom reference database (e.g. MitoFish / custom vertebrate 12S FASTA via `--ref_database`) or utilize an independent eDNA classification workflow.
+* **Read-Length Filtering:** Default `min_len` is 800 bp and `max_len` is 2,000 bp. For short amplicons (e.g. fungal ITS or fish 12S), `min_len` must be adjusted downward (e.g. 100 bp).
 * **Alignment Thresholds:** `min_percent_identity: 95` and `min_ref_coverage: 90`. Reads falling below these thresholds remain categorized as "Unclassified".
+
+---
+
+#### 9.8 Guided Practical Checkpoint: Five Critical Decisions (H8)
+
+This interactive checkpoint reinforces five pivotal laboratory and computational decisions encountered across the workflow:
+
+#### Table 18b. Guided practical checkpoint questions and decision rationale
+| Decision # | Scenario / Question | Options & Correct Choice | Scientific Rationale |
+|---|---|---|---|
+| **Q1 · Stoichiometry** | You quantify a 1,500 bp amplicon at 30 ng/µL. What mass and volume are needed to deliver 200 fmol into an 11.5 µL reaction? | **A: 198 ng (6.6 µL)** *(Correct)*<br>B: 66 ng (2.2 µL)<br>C: 300 ng (10.0 µL) | $\text{Mass} = (200 \times 1{,}500 \times 660) / 10^6 \approx 198\text{ ng}$. At 30 ng/µL: $198 / 30 = 6.6\ \mu\text{L}$ DNA $+ 4.9\ \mu\text{L}$ water $= 11.5\ \mu\text{L}$. |
+| **Q2 · Barcoding & Controls** | You have 6 biological samples. How many unique native barcodes must you allocate, and when can you combine the tubes? | A: 6 barcodes; pool immediately<br>**B: 8 barcodes; pool strictly post-EDTA** *(Correct)*<br>C: 8 barcodes; pool pre-ligation | Always include 1 extraction blank and 1 PCR NTC (8 barcodes total). Tubes must never be combined before ligase is completely quenched with EDTA; unquenched ligase causes cross-ligation and sample crosstalk. |
+| **Q3 · Size Selection** | You are purifying a 1.5 kb amplicon library post-ligation. Which wash buffer must you use? | **A: Short Fragment Buffer (SFB)** *(Correct)*<br>B: Long Fragment Buffer (LFB)<br>C: 80% Ethanol | SFB retains all bead-bound fragments without stripping. LFB selectively enriches fragments $\ge 3\text{ kb}$ and severely depletes amplicons. |
+| **Q4 · Flow Cell Loading** | What is the final PromethION loading mix recipe, and how long should the flow cell rest before starting? | **A: 100 µL SB + 68 µL LIB + 32 µL library; rest $\ge 10\text{ min}$** *(Correct)*<br>B: 200 µL pure library; start immediately | SB provides electrolyte balance, LIB provides library beads (which must be vortexed vigorously), and resting $\ge 10\text{ minutes}$ increases sequencing throughput and pore availability. |
+| **Q5 · Lab Troubleshooting** | A researcher accidentally washed the final magnetic beads with 80% ethanol after sequencing adapter ligation. What happens upon loading? | A: Yield improves 20%<br>**B: Active pore occupancy drops to near 0%** *(Correct)*<br>C: No observable effect | Ethanol denatures the motor protein pre-attached to the Native Adapter. Without an active motor protein, DNA strands cannot dock and translocate through the pore. |
 
 ---
 
@@ -674,8 +706,8 @@ $$\text{Phred Quality Score: } Q = -10 \cdot \log_{10}(P_{\text{error}})$$
 | **1** | Why do equal masses of two different amplicons contain unequal numbers of DNA molecules? | DNA molecular weight scales linearly with base pair length ($M \approx \text{bp} \times 660\text{ g/mol}$). A shorter fragment has fewer grams per mole; consequently, 100 ng of a 500 bp amplicon contains three times as many individual double-stranded molecules as 100 ng of a 1,500 bp amplicon. |
 | **2** | Which phase makes the Native Barcoding library "PCR-free", and where does PCR occur? | The Native Barcoding Kit (SQK-NBD114.24) is "PCR-free" during library construction because barcodes and adapters are attached via enzymatic end-repair and cohesive TA-ligation without subsequent cycles of PCR amplification. However, the input amplicon DNA was generated by PCR prior to library prep. |
 | **3** | Why is an extraction negative control mandatory even when multiplexing with native barcodes? | Native barcodes separate multiplexed biological samples from one another during bioinformatic demultiplexing, but they cannot eliminate background DNA present in extraction spin columns, lysis buffers, or enzymes ("the kitome"). Sequencing the extraction blank identifies baseline contaminant taxa that must be filtered out. |
-| **4** | State three distinct reasons why relative read counts do not directly correspond to living organism cell counts. | (1) Ribosomal RNA gene copy numbers vary from 1 to >15 copies across bacterial genomes; (2) Differential cell wall lysis efficiencies cause unequal DNA extraction recovery; (3) DNA sequence counts are compositional proportions that sum to 100%, making read shares interdependent. |
-| **5** | What parameters must change if applying this workflow to a short 170 bp fish 12S eDNA amplicon instead of 1,500 bp 16S? | (1) The magnetic bead cleanup ratio must be increased from 0.4× to >1.0× to avoid discarding short fragments; (2) The final library loading target must increase to ~100 fmol; (3) `wf-16s` read-length filters (`min_len: 800`) must be lowered to ~100 bp; (4) The reference database must be swapped from bacterial 16S to curated vertebrate 12S libraries. |
+| **4** | State three distinct reasons why relative read counts do not directly correspond to living organism cell counts. | (1) Ribosomal RNA gene copy numbers vary from 1 to 21 copies across bacterial genomes (rrnDB v5; Stoddard et al. 2015), and intragenomic operon variants exist; (2) Differential cell wall lysis efficiencies cause unequal DNA extraction recovery; (3) DNA sequence counts are compositional proportions that sum to 100%, making read shares interdependent. |
+| **5** | What parameters must change if applying this workflow to a short 170 bp fish 12S eDNA amplicon instead of 1,500 bp 16S? | (1) Both 0.4× magnetic bead cleanups (post-barcoding pooling and post-adapter ligation) select strongly against DNA <1 kb; recovering ~170 bp fragments requires empirically titrated higher SPRI ratios (~1.5×–1.8×) `[ADAPT]`; (2) The final library loading target must increase to ~100 fmol (<1 kb tier); (3) `wf-16s` read-length filters (`min_len: 800`) must be lowered to ~100 bp; (4) The reference database must be swapped from bacterial 16S to curated vertebrate 12S (e.g. MitoFish), as `ncbi_16s_18s` lacks fish mitochondrial sequences. |
 | **6** | What implicit assumptions govern the default parameter settings of EPI2ME `wf-16s`? | The workflow assumes intact, full-length bacterial/archaeal 16S amplicons (length window 800–2,000 bp), pairwise alignment with minimap2 requiring $\ge 95\%$ identity and $\ge 90\%$ reference coverage, and classification against the NCBI 16S/18S ribosomal targeted loci database. |
 
 #### Synthesis: Adapting Workflows to Environmental DNA (eDNA) Metabarcoding
@@ -684,11 +716,11 @@ When transitioning from full-length bacterial 16S sequencing to aquatic eDNA mon
 #### Table 25. Workflow adaptations: Full-length 16S vs Short 12S eDNA `[ADAPT]`
 | Protocol Parameter | Full-Length 16S Workflow | Short 12S Fish eDNA Workflow |
 |---|---|---|
-| **Typical Target Size** | ~1,500 bp | ~163–185 bp (MiFish) |
-| **Pooled Bead Cleanup Ratio** | 0.4× AMPure XP (selects against <1 kb) | Must increase to 1.0×–1.2×; 0.4× completely discards short 12S fragments |
+| **Typical Target Size** | ~1,500 bp | ~163–185 bp (MiFish; Miya et al. 2015) |
+| **SPRI Bead Clean-up Ratios (Pooling & Post-Adapter)** | 0.4× AMPure XP (selects against <1 kb) | Must increase significantly to ~1.5×–1.8× `[ADAPT]`; standard 0.4× cleanups severely deplete ~170 bp fragments. Requires pilot titration. |
 | **Final Library Loading Target** | 35–50 fmol (1–10 kb tier) | 100 fmol (<1 kb tier) |
-| **`wf-16s` Read-Length Window** | 800 to 2,000 bp | Must lower `min_len` to 100 bp, or use custom eDNA pipelines |
-| **Reference Database** | NCBI 16S/18S or SILVA SSU | Curated fish mitochondrial 12S databases (e.g. MitoFish / NCBI 12S) |
+| **`wf-16s` Read-Length Window** | 800 to 2,000 bp | Must lower `min_len` to 100 bp, or route through dedicated eDNA pipelines |
+| **Reference Database** | NCBI 16S/18S or SILVA SSU | Curated fish mitochondrial 12S databases (e.g. MitoFish / custom 12S FASTA); `ncbi_16s_18s` contains no vertebrate 12S |
 | **Contamination Rigor** | Standard extraction blanks and NTCs | Rigorous field sampling blanks, filtration blanks, and DNA-free workspace isolation |
 
 ---
@@ -823,7 +855,7 @@ $$\text{Mass (ng)} = \frac{\text{fmol} \times \text{Length (bp)} \times 660}{1{,
 | **Dorado** | Oxford Nanopore's open-source, high-performance basecalling software engine powered by deep learning models |
 | **eDNA** | Environmental DNA; cellular or extracellular genetic material shed into water, air, or soil by living organisms |
 | **Femtomole (fmol)** | A unit of molecular quantity equal to $10^{-15}\text{ moles}$; corresponds to approximately $6.022 \times 10^8$ double-stranded DNA molecules |
-| **Flow Cell Tether (FCT)** | A specialized synthetic oligonucleotide that pre-conditions the flow cell membrane, anchoring lipid-tethered adapters near the nanopores |
+| **Flow Cell Tether (FCT)** | A lipid-conjugated synthetic oligonucleotide anchor present in the priming and loading mix that pre-concentrates DNA/RNA library molecules at the surface of the synthetic polymer membrane adjacent to the nanopores, dramatically improving pore capture rates and sequencing throughput |
 | **Homopolymer** | A continuous run of identical contiguous bases (e.g. `AAAAAAA`); historically prone to indel errors on single-constriction nanopores |
 | **Kitome** | The characteristic background microbial DNA profile unintentionally present in commercial extraction spin columns and lysis reagents |
 | **Native Adapter (NA)** | An engineered double-stranded sequencing adapter carrying the motor protein that unzips DNA and controls its translocation speed through the pore |
@@ -831,7 +863,7 @@ $$\text{Mass (ng)} = \frac{\text{fmol} \times \text{Length (bp)} \times 660}{1{,
 | **Pore Occupancy** | The percentage of active nanopores currently occupied and translocating DNA strands during an active sequencing run |
 | **POD5** | ONT's modern, highly efficient columnar file format for storing raw electrical current measurements and device telemetry |
 | **R10.4.1** | The current generation of ONT protein nanopores featuring dual-reader constrictions that resolve homopolymers and deliver >Q20 raw read accuracy |
-| **Short Fragment Buffer (SFB)** | A specialized enzymatic wash buffer that retains DNA fragments across all sizes down to ~150 bp while removing unbound adapters and ligase |
+| **Short Fragment Buffer (SFB)** | A specialized enzymatic wash buffer that retains DNA fragments across all sizes bound to beads while removing unbound adapters, excess enzymes, and short oligonucleotides |
 
 ---
 
@@ -844,11 +876,13 @@ $$\text{Mass (ng)} = \frac{\text{fmol} \times \text{Length (bp)} \times 660}{1{,
 
 #### Literature Citations
 * Deamer D, Akeson M, Branton D. Three decades of nanopore sequencing. *Nat Biotechnol*. 2016;34(5):518–524. doi:[10.1038/nbt.3423](https://doi.org/10.1038/nbt.3423)
+* Folmer O, Black M, Hoeh W, Lutz R, Vrijenhoek R. DNA primers for amplification of mitochondrial cytochrome c oxidase subunit I from diverse metazoan invertebrates. *Mol Mar Biol Biotechnol*. 1994;3(5):294–299.
 * Gloor GB, Macklaim JM, Pawlowsky-Glahn V, Egozcue JJ. Microbiome datasets are compositional: and this is not optional. *Front Microbiol*. 2017;8:2224. doi:[10.3389/fmicb.2017.02224](https://doi.org/10.3389/fmicb.2017.02224)
 * Hebert PDN, Cywinska A, Ball SL, deWaard JR. Biological identifications through DNA barcodes. *Proc R Soc B*. 2003;270(1512):313–321. doi:[10.1098/rspb.2002.2218](https://doi.org/10.1098/rspb.2002.2218)
 * Jain M, Olsen HE, Paten B, Akeson M. The Oxford Nanopore MinION: delivery of nanopore sequencing to the genomics community. *Genome Biol*. 2016;17:239. doi:[10.1186/s13059-016-1103-0](https://doi.org/10.1186/s13059-016-1103-0)
 * Johnson JS, Spakowicz DJ, Hong BY, et al. Evaluation of 16S rRNA gene sequencing for species and strain-level microbiome analysis. *Nat Commun*. 2019;10:5029. doi:[10.1038/s41467-019-13036-1](https://doi.org/10.1038/s41467-019-13036-1)
 * Kebschull JM, Zador AM. Sources of PCR-induced distortions in high-throughput sequencing data sets. *Nucleic Acids Res*. 2015;43(21):e143. doi:[10.1093/nar/gkv717](https://doi.org/10.1093/nar/gkv717)
+* Leray M, Yang JY, Meyer CP, et al. A new versatile primer set targeting a short fragment of the mitochondrial COI region for metabarcoding metazoan diversity: applying next-generation sequencing to marine snail diversity. *Front Zool*. 2013;10:34. doi:[10.1186/1742-9994-10-34](https://doi.org/10.1186/1742-9994-10-34)
 * Li H. Minimap2: pairwise alignment for nucleotide sequences. *Bioinformatics*. 2018;34(18):3094–3100. doi:[10.1093/bioinformatics/bty191](https://doi.org/10.1093/bioinformatics/bty191)
 * Lu J, Breitwieser FP, Thielen P, Salzberg SL. Bracken: estimating species abundance in metagenomics data. *PeerJ Comput Sci*. 2017;3:e104. doi:[10.7717/peerj-cs.104](https://doi.org/10.7717/peerj-cs.104)
 * McMurdie PJ, Holmes S. Waste not, want not: why rarefying microbiome data is inadmissible. *PLoS Comput Biol*. 2014;10(4):e1003531. doi:[10.1371/journal.pcbi.1003531](https://doi.org/10.1371/journal.pcbi.1003531)
@@ -858,6 +892,7 @@ $$\text{Mass (ng)} = \frac{\text{fmol} \times \text{Length (bp)} \times 660}{1{,
 * Rang FJ, Kloosterman WP, de Ridder J. From squiggle to basepair: computational approaches for improving nanopore sequencing read accuracy. *Genome Biol*. 2018;19:90. doi:[10.1186/s13059-018-1462-9](https://doi.org/10.1186/s13059-018-1462-9)
 * Salter SJ, Cox MJ, Turek EM, et al. Reagent and laboratory contamination can critically impact sequence-based microbiome analyses. *BMC Biol*. 2014;12:87. doi:[10.1186/s12915-014-0087-z](https://doi.org/10.1186/s12915-014-0087-z)
 * Schoch CL, Seifert KA, Huhndorf S, et al. Nuclear ribosomal internal transcribed spacer (ITS) region as a universal DNA barcode marker for Fungi. *Proc Natl Acad Sci USA*. 2012;109(16):6241–6246. doi:[10.1073/pnas.1117018109](https://doi.org/10.1073/pnas.1117018109)
+* Stoddard SF, Smith BJ, Hagan CE, Christian RR, Tao L. rrnDB: improved tools for interpreting rRNA gene abundance in finished and draft genomes. *Nucleic Acids Res*. 2015;43(Database issue):D593–D598. doi:[10.1093/nar/gku1201](https://doi.org/10.1093/nar/gku1201)
 * Taberlet P, Coissac E, Hajibabaei M, Rieseberg LH. Environmental DNA (Introduction to a special issue). *Mol Ecol*. 2012;21(8):1789–1793. doi:[10.1111/j.1365-294X.2012.05542.x](https://doi.org/10.1111/j.1365-294X.2012.05542.x)
 * Taberlet P, Coissac E, Pompanon F, et al. Power and limitations of the chloroplast trnL (UAA) intron for plant DNA barcoding. *Nucleic Acids Res*. 2007;35(3):e14. doi:[10.1093/nar/gkl938](https://doi.org/10.1093/nar/gkl938)
 * Wang Y, Zhao Y, Bollas A, Wang Y, Au KF. Nanopore sequencing technology, bioinformatics and applications. *Nat Biotechnol*. 2021;39(11):1348–1365. doi:[10.1038/s41587-021-01108-x](https://doi.org/10.1038/s41587-021-01108-x)

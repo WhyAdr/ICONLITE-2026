@@ -9,3 +9,7 @@ $RECYCLE.BIN/
 node_modules/
 *.log
 *.tmp
+__pycache__/
+*.pyc
+.~lock.*
+.soffice_profile/
