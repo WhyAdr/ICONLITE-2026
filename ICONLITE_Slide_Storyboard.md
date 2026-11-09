@@ -62,7 +62,15 @@
 - **Handbook:** Ch. 7
 - **Time:** 2.0 min
 
-## 8 · 8 — From sample to library: the big picture
+## 8 · 8 — Selecting Your ONT Library Kit: Native vs. Dedicated 16S
+- **Objective:** Compare Oxford Nanopore amplicon barcoding chemistries and justify selecting Native Barcoding (`SQK-NBD114.24`) for multi-domain workflows.
+- **Takeaway:** Dedicated 16S kits (`SQK-MAB114.24` / legacy `SQK-16S114.24`) offer rapid PCR-based turnaround for 16S only; Native Barcoding (`SQK-NBD114.24`) provides universal ligation chemistry for any marker (16S, ITS, 18S, COI, 12S). While EPI2ME `wf-16s` lists MAB as default, it processes demultiplexed FASTQs from any kit [LAB].
+- **Visual / data:** Three-card comparative architecture: (1) `SQK-NBD114.24` (universal ligation chemistry, custom PCR); (2) `SQK-MAB114.24` (rapid PCR barcoding, 16S only); (3) Kit lineage & `wf-16s` compatibility matrix (`SQK-16S024` → `SQK-16S114.24` → `SQK-MAB114.24`).
+- **Data status:** Manufacturer specifications + empirical compatibility
+- **Handbook:** Ch. 7 (Table 6b) & Ch. 9
+- **Time:** 2.0 min
+
+## 9 · 9 — From sample to library: the big picture
 - **Objective:** Bridge conceptual foundations to the guided practical.
 - **Takeaway:** PCR amplifies marker amplicons first; the Native Barcoding library preparation itself is enzymatic and PCR-free.
 - **Visual / data:** Six-step laboratory workflow from sample collection to sequencing, paired with essential experimental controls (extraction blank, PCR NTC, mock community).
@@ -70,7 +78,7 @@
 - **Handbook:** Ch. 8
 - **Time:** 2.5 min
 
-## 9 · H1 — Preparing and evaluating PCR amplicons
+## 10 · H1 — Preparing and evaluating PCR amplicons
 - **Objective:** Evaluate amplicon purity and understand stoichiometric molar input.
 - **Takeaway:** Library input is governed by molarity (fmol), not mass (ng): equal mass does not imply equal molecules.
 - **Visual / data:** Real agarose gel photograph of ~1.5 kb 16S amplicons (`16S-rRNA-PCR-gel-image.jpg`), mass-to-molarity formula card (200 fmol = 198 ng for 1.5 kb dsDNA), and equal-mass vs. equal-fmol table.
@@ -78,7 +86,7 @@
 - **Handbook:** Ch. 9.1
 - **Time:** 2.5 min
 
-## 10 · H2 — End-prep: getting DNA ready for ligation
+## 11 · H2 — End-prep: getting DNA ready for ligation
 - **Objective:** Explain enzymatic end-repair and dA-tailing.
 - **Takeaway:** End-prep repairs ragged DNA termini and appends a single 3′ dA-overhang required for barcode ligation.
 - **Visual / data:** Reagent table (15 µL reaction), thermal cycler profile (20 °C 5 min, 65 °C 5 min), and 1.0× AMPure XP bead cleanup steps.
@@ -86,7 +94,7 @@
 - **Handbook:** Ch. 9.2
 - **Time:** 2.0 min
 
-## 11 · H3 — Native barcoding and multiplexing
+## 12 · H3 — Native barcoding and multiplexing
 - **Objective:** Explain molecular barcoding and sample pooling.
 - **Takeaway:** Each biological sample receives a unique native barcode (`NB01`–`NB24`) before pooling; reactions are quenched with EDTA before combination.
 - **Visual / data:** Six samples receiving unique native barcodes, pooling reaction arithmetic, 0.4× AMPure XP bead cleanup, and SFB washes.
@@ -94,7 +102,7 @@
 - **Handbook:** Ch. 9.3
 - **Time:** 2.5 min
 
-## 12 · H4 — Sequencing adapters and final clean-up
+## 13 · H4 — Sequencing adapters and final clean-up
 - **Objective:** Distinguish sample-identifying barcodes from sequencing adapters.
 - **Takeaway:** Barcodes identify sample provenance; Native Adapters carry the motor protein that engages the pore; SFB retains amplicons while ethanol ruins motor proteins.
 - **Visual / data:** Molecular library anatomy cartoon, adapter ligation reaction recipe (50 µL), and SFB vs. LFB decision cards.
@@ -102,7 +110,7 @@
 - **Handbook:** Ch. 9.4
 - **Time:** 2.5 min
 
-## 13 · H5 — Priming and loading the PromethION flow cell
+## 14 · H5 — Priming and loading the PromethION flow cell
 - **Objective:** Master physical flow cell loading steps and identify critical failure modes.
 - **Takeaway:** Proper bubble elimination, tether pre-treatment, and thorough bead mixing prevent pore loss and low occupancy.
 - **Visual / data:** Annotated 3D PromethION flow cell architecture diagram, priming mix recipe (1,200 µL), loading mix recipe (200 µL), and six-step loading sequence.
@@ -110,7 +118,7 @@
 - **Handbook:** Ch. 9.5
 - **Time:** 2.5 min
 
-## 14 · H6 — MinKNOW: from library to data
+## 15 · H6 — MinKNOW: from library to data
 - **Objective:** Walk through the transition from physical bench to digital data acquisition.
 - **Takeaway:** Reproducible run parameters (kit selection, basecalling models, Q filters) ensure data traceability and downstream classification accuracy.
 - **Visual / data:** Real MinKNOW interface screenshot (`MinKNOW-sequencing-run-configuration1.jpeg`) showing flow cell status, kit selection (`SQK-NBD114.24`), and real-time basecalling configuration.
@@ -118,7 +126,7 @@
 - **Handbook:** Ch. 9.6
 - **Time:** 2.0 min
 
-## 15 · H7 — From FASTQ to biological interpretation
+## 16 · H7 — From FASTQ to biological interpretation
 - **Objective:** Walk through a reproducible bioinformatics workflow using EPI2ME `wf-16s`.
 - **Takeaway:** Quality control, length filtering, and classifier choice (minimap2 vs. Kraken2) determine the final taxonomic abundance matrix.
 - **Visual / data:** Five-step analysis pipeline paired with real EPI2ME `wf-16s` setup interface screenshot (`wf16s-run-start-page.jpeg`), highlighting parameter defaults and database selection.
@@ -126,7 +134,7 @@
 - **Handbook:** Ch. 9.7
 - **Time:** 2.5 min
 
-## 16 · H8 — Mini lab exercise: five decisions
+## 17 · H8 — Mini lab exercise: five decisions
 - **Objective:** Reinforce critical workflow decisions made throughout the practical with an interactive checkpoint.
 - **Takeaway:** Every experimental decision directly traces back to a biophysical or enzymatic protocol rule.
 - **Visual / data:** Five structured scenario cards covering: (1) Stoichiometry calculation (200 fmol = 198 ng for 1.5 kb); (2) Controls and pooling (quench with EDTA before pooling); (3) Wash buffer selection (SFB mandatory for amplicons); (4) Loading mix recipe & rest (rest ≥10 min); (5) Laboratory failure diagnosis (ethanol after adapter ligation drops occupancy to ~0%).
@@ -134,7 +142,7 @@
 - **Handbook:** Ch. 14 / Appendix
 - **Time:** 3.0 min
 
-## 17 · 9 — From raw signal to FASTQ reads
+## 18 · 10 — From raw signal to FASTQ reads
 - **Objective:** Explain how continuous electrical measurements become discrete nucleotide sequences.
 - **Takeaway:** Basecalling converts raw ionic current into reads and per-base Phred confidence scores; basecalling yields sequences, not species.
 - **Visual / data:** Real-time signal-to-sequence transformation visual, Phred quality score definition ($Q = -10 \log_{10} P$), and Dorado neural network basecalling role.
@@ -142,7 +150,7 @@
 - **Handbook:** Ch. 10
 - **Time:** 2.0 min
 
-## 18 · 10 — Read QC and taxonomic classification
+## 19 · 11 — Read QC and taxonomic classification
 - **Objective:** Contrast alignment-based and k-mer-based classification strategies.
 - **Takeaway:** Neither algorithm is universally "better": minimap2 provides finer species resolution, whereas Kraken2 provides maximum execution speed.
 - **Visual / data:** Structured comparison table between minimap2 alignment and Kraken2 + Bracken k-mer matching across principles, strengths, and caveats.
@@ -150,7 +158,7 @@
 - **Handbook:** Ch. 11
 - **Time:** 2.5 min
 
-## 19 · 11 — Reading community profiles critically
+## 20 · 12 — Reading community profiles critically
 - **Objective:** Teach rigorous ecological interpretation of taxonomic profiles rather than uncritical display.
 - **Takeaway:** Sequence read proportions represent compositional fractions, not absolute living organism counts, due to copy number variation (rrnDB v5: 1–21 copies) and primer bias.
 - **Visual / data:** Stacked bar chart (simulated composition), alpha/beta diversity summary, and preserved audience question callout.
@@ -158,7 +166,15 @@
 - **Handbook:** Ch. 12
 - **Time:** 2.5 min
 
-## 20 · 12 — Pore Architecture & Accuracy: R9.4.1 vs. R10.4.1
+## 21 · 13 — From Taxonomy to Function: Predictive Metagenomics
+- **Objective:** Bridge from taxonomic identification ("Who is there?") to metabolic potential ("What are they doing?") using predictive bioinformatics.
+- **Takeaway:** PICRUSt2 and FUNGuild formulate valuable functional hypotheses, but genomic potential is not active expression; predictions require validation via shotgun metagenomics or metatranscriptomics.
+- **Visual / data:** Two mechanism cards (PICRUSt2 phylogenetic hidden-state reconstruction + FUNGuild ecological guild mapping) paired with a bottom scientific realism alert banner (potential ≠ expression; NSTI index degradation in non-human biomes; contested copy-number normalization).
+- **Data status:** Published algorithmic workflows (Douglas et al. 2020; Nguyen et al. 2016)
+- **Handbook:** Ch. 13 (Table 21b)
+- **Time:** 2.0 min
+
+## 22 · 14 — Pore Architecture & Accuracy: R9.4.1 vs. R10.4.1
 - **Objective:** Explain the biophysical and computational engineering that elevated nanopore accuracy to >Q20 (>99%).
 - **Takeaway:** Dual reader heads break homopolymer ambiguity, and deep neural network basecallers eliminate historical accuracy bottlenecks.
 - **Visual / data:** Three crisp bullets paired with R9 vs. R10 dual-reader pore structural comparison diagram and Dorado deep neural network basecalling pipeline schematic.
@@ -166,7 +182,7 @@
 - **Handbook:** Ch. 6.2 & 6.3
 - **Time:** 2.5 min
 
-## 21 · 13 — Adapting Workflows for Environmental DNA (eDNA)
+## 23 · 15 — Adapting Workflows for Environmental DNA (eDNA)
 - **Objective:** Evaluate critical experimental adaptations required when profiling short, degraded aquatic environmental DNA.
 - **Takeaway:** A single protocol does not fit all targets: bead cleanup ratios (both cleanups), loading stoichiometry, and bioinformatic filters must match fragment biology.
 - **Visual / data:** Three crisp bullets paired with vertebrate mitochondrial 12S MiFish marker schematic and direct session bridge card.
@@ -174,7 +190,7 @@
 - **Handbook:** Ch. 4.5 & 14 (Synthesis)
 - **Time:** 2.5 min
 
-## 22 · 14 — Strengths, limitations and pitfalls
+## 24 · 16 — Strengths, limitations and pitfalls
 - **Objective:** Synthesize culture-independent strengths against methodological pitfalls and troubleshooting.
 - **Takeaway:** Experimental controls (extraction blanks, NTCs) separate genuine biological signals from kitome contamination; functional prediction (PICRUSt2/FUNGuild) infers ecological roles.
 - **Visual / data:** Two-column benefits vs. pitfalls summary paired with a negative control troubleshooting decision tree.
@@ -182,7 +198,7 @@
 - **Handbook:** Ch. 13
 - **Time:** 2.5 min
 
-## 23 · 15 — Key takeaways and discussion
+## 25 · 17 — Key takeaways and discussion
 - **Objective:** Consolidate workshop learning and bridge seamlessly to Pak Hilman's fish metabarcoding session.
 - **Takeaway:** Amplicon sequencing is an integrated chain of decisions; experimental choices at each step shape the resulting biological story.
 - **Visual / data:** Four core takeaway cards, sample-to-species decision pipeline, and prominent session handoff card.

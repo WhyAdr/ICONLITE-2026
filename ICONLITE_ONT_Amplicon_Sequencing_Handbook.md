@@ -47,9 +47,10 @@
   - [Chapter 10. Nanopore Data Formats and Basecalling](#chapter-10-nanopore-data-formats-and-basecalling)
   - [Chapter 11. Quality Control and Taxonomic Assignment](#chapter-11-quality-control-and-taxonomic-assignment)
   - [Chapter 12. Community Visualization and Interpretation](#chapter-12-community-visualization-and-interpretation)
+  - [Chapter 13. Predictive Functional Profiling (PICRUSt2 and FUNGuild)](#chapter-13-predictive-functional-profiling-from-taxonomy-to-function-picrust2--funguild)
 - [Part D – Critical Evaluation and Synthesis](#part-d--critical-evaluation-and-synthesis)
-  - [Chapter 13. Limitations and Troubleshooting](#chapter-13-limitations-and-troubleshooting)
-  - [Chapter 14. Summary, Synthesis and Further Reading](#chapter-14-summary-synthesis-and-further-reading)
+  - [Chapter 14. Limitations and Troubleshooting](#chapter-14-limitations-and-troubleshooting)
+  - [Chapter 15. Summary, Synthesis and Further Reading](#chapter-15-summary-synthesis-and-further-reading)
 - [Appendices](#appendices)
   - [Appendix A. Reagent and Consumables Checklist](#appendix-a-reagent-and-consumables-checklist)
   - [Appendix B. Barcode Assignment and Sample-Tracking Template](#appendix-b-barcode-assignment-and-sample-tracking-template)
@@ -317,10 +318,28 @@ ONT’s modern basecalling engine—**Dorado**—decodes raw signal stored in `P
 | **GridION** | Benchtop with onboard GPU compute | Up to 5 MinION flow cells | Up to 2,560 channels (5 × 512 channels) | Core facility daily throughput; parallel multi-sample barcoded amplicon runs |
 | **PromethION 2 Solo / 24 / 48** | High-throughput enterprise instrument | 2, 24, or 48 PromethION cells | 3,000 channels (addressing 12,000 pores; 5,000-pore warranty minimum) | Large-scale population surveys, massive amplicon multiplexing (thousands of samples) |
 
+#### Oxford Nanopore Library Preparation Kits for Amplicon Sequencing
+Selecting the appropriate library preparation chemistry depends on target marker biology, sample throughput, and turnaround requirements.
+
+#### Table 6b. Comparison of Oxford Nanopore amplicon barcoding kits [MFR / LAB]
+| Feature / Specification | Native Barcoding Kit 24 V14 (`SQK-NBD114.24`) | 16S Barcoding Kit 24 V14 (`SQK-MAB114.24`) | 16S Barcoding Kit V14 (`SQK-16S114.24`) |
+|---|---|---|---|
+| **Primary Chemistry** | Ligation-based (End-prep dA-tailing + blunt/TA barcode ligation) | PCR-based barcoding with rapid sequencing adapter attachment | PCR-based barcoding (direct preceding generation of MAB) |
+| **Target Markers** | **Universal / Any amplicon** (16S, 18S, ITS, COI, 12S, custom) | **Bacterial 16S rRNA only** (pre-mixed 27F / 1492R primers) | **Bacterial 16S rRNA only** (pre-mixed 27F / 1492R primers) |
+| **Primer Requirement** | User provides custom forward/reverse primers | Included in kit (ONT 16S primers with barcode attachment tags) | Included in kit (ONT 16S primers with barcode attachment tags) |
+| **PCR in Libprep** | None (library construction involves only enzymatic ligation) | Single or two-step barcoding PCR directly incorporates barcodes | Single-step barcoding PCR |
+| **Hands-on Time** | ~3.0–3.5 hours | ~2.0–2.5 hours | ~2.0–2.5 hours |
+| **Multiplexing Scale** | 24 samples (expandable to 96 with `SQK-NBD114.96`) | 24 samples (`SQK-MAB114.24`) | 24 samples (`SQK-16S114.24`; legacy `SQK-16S024`) |
+| **`wf-16s` Compatibility** | Fully compatible (accepts demultiplexed `FASTQ` from any kit) `[LAB]` | Listed in official `wf-16s` documentation as primary kit `[MFR]` | Listed in official `wf-16s` documentation as primary kit `[MFR]` |
+| **Recommended Use** | Multi-domain studies, environmental DNA (eDNA), fungal ITS, fish 12S, or custom targets | Rapid, standardized bacterial 16S surveillance where protocol speed is paramount | Standard bacterial 16S profiling (superseded by `SQK-MAB114.24` for Kit 14) |
+
+> [!NOTE]
+> **Why this workshop focuses on `SQK-NBD114.24`:** While Oxford Nanopore's `wf-16s` documentation lists `SQK-MAB114.24` and `SQK-16S114.24` because they include proprietary 16S PCR primers, this workshop intentionally teaches the **Native Barcoding Kit 24 V14 (`SQK-NBD114.24`)**. Native barcoding is the foundational, universal ligation chemistry that generalizes across all molecular markers—enabling participants to sequence fungal ITS, eukaryotic 18S, animal COI, and aquatic eDNA 12S amplicons without altering their library preparation protocol. Because EPI2ME `wf-16s` accepts demultiplexed `FASTQ` files, libraries constructed with `SQK-NBD114.24` run seamlessly through the pipeline.
+
 #### Experimental Planning Guidelines
 * **Sample Multiplexing:** Native Barcoding Kit 24 V14 provides 24 unique barcodes (`NB01`–`NB24`), enabling 24 distinct samples per flow cell `[MFR]`.
 * **Reserve Barcodes for Quality Controls:** Always allocate barcodes to an extraction blank, a PCR no-template control (NTC), and an optional positive mock community.
-* **Target Sequencing Depth:** For bacterial 16S community profiling, 20,000 to 50,000 classified reads per sample provide comprehensive coverage of abundant and moderately rare taxa. On a PromethION flow cell yielding millions of reads, 24 samples will reach saturating depth rapidly, allowing the run to be stopped early or multiplexed at higher barcode tiers.
+* **Target Sequencing Depth [LAB]:** For bacterial 16S community profiling, an empirical target of 20,000 to 50,000 classified reads per sample provides comprehensive coverage of dominant and subdominant taxa, with rarefaction curves typically plateauing past ~20,000 reads in standard communities [LAB]. On a PromethION flow cell yielding millions of reads, 24 samples will reach saturating depth rapidly, allowing the run to be stopped early once saturation is confirmed in MinKNOW or multiplexed at higher barcode tiers (e.g. 96-plex with SQK-NBD114.96).
 * **Flow Cell Quality Check:** Always perform an electronic flow cell check via MinKNOW within 12 weeks of purchase. The manufacturer warranty guarantees a minimum of 5,000 active sequencing pores on a new PromethION flow cell `[MFR]`.
 * **Consumable Compatibility:** The native barcoding amplicon protocol requires R10.4.1 PromethION flow cells (`FLO-PRO114M`) `[MFR]`.
 
@@ -582,11 +601,14 @@ EPI2ME `wf-16s` is the official Nextflow bioinformatics pipeline developed by Ox
 *Figure 9.9. Parameter setup screen for wf-16s detailing classifier selection (minimap2 vs. Kraken2), reference database configuration, and read-length filtering windows.*
 
 #### Pipeline Parameters
-* **`classifier`:** Choose between `minimap2` (pairwise reference alignment, recommended for fine species resolution) or `kraken2` (k-mer matching with Bracken abundance re-estimation, faster execution).
-* **`database_set`:** Default is `ncbi_16s_18s` (updated NCBI targeted loci covering bacteria, archaea, and fungi). For fungal ITS amplicons, change to `ncbi_16s_18s_28s_ITS`.
-* **Database Limitation Warning:** The `ncbi_16s_18s` database does **not** contain vertebrate mitochondrial 12S sequences. If analyzing fish 12S eDNA, simply lowering `min_len` will result in 100% unclassified reads. Researchers must either provide a custom reference database (e.g. MitoFish / custom vertebrate 12S FASTA via `--ref_database`) or utilize an independent eDNA classification workflow.
+* **`classifier`:** Choose between `minimap2` (pairwise reference alignment, recommended for fine species resolution) or `kraken2` (exact k-mer matching with Bracken abundance re-estimation, faster execution).
+* **Reference Database & Taxonomy Flags:**
+  * *Minimap2 Mode:* Configured using `--reference` (path to reference FASTA or pre-indexed `.mmi` file; defaults to bundled NCBI 16S/18S targeted loci), `--ref2taxid` (two-column TSV mapping sequence headers to NCBI taxonomy IDs), and `--taxonomy` (directory containing NCBI taxonomy dump files `names.dmp` and `nodes.dmp`).
+  * *Kraken2 Mode:* Configured using `--database` (directory containing Kraken2 hash index files `hash.k2d`, `opts.k2d`, `taxo.k2d`) and `--taxonomy` (NCBI taxonomy directory for taxonomic lineage roll-up).
 * **Read-Length Filtering:** Default `min_len` is 800 bp and `max_len` is 2,000 bp. For short amplicons (e.g. fungal ITS or fish 12S), `min_len` must be adjusted downward (e.g. 100 bp).
 * **Alignment Thresholds:** `min_percent_identity: 95` and `min_ref_coverage: 90`. Reads falling below these thresholds remain categorized as "Unclassified".
+* **Database Limitation Warning:** The bundled `ncbi_16s_18s` database does **not** contain vertebrate mitochondrial 12S sequences. If analyzing fish 12S eDNA, simply lowering `min_len` will result in 100% unclassified reads. Researchers must supply a custom reference database (e.g. MitoFish FASTA via `--reference`, accompanied by custom `--ref2taxid` and `--taxonomy` parameters). For detailed instructions on running pipelines in air-gapped environments or installing custom databases, refer to Oxford Nanopore Support: *"How to run EPI2ME workflows offline"* (available at [https://support.nanoporetech.com/](https://support.nanoporetech.com/) and [https://github.com/epi2me-labs/wf-16s](https://github.com/epi2me-labs/wf-16s)).
+* **Kit Compatibility:** While official ONT documentation for `wf-16s` lists `SQK-MAB114.24` and `SQK-16S114.24` as associated protocols because they include proprietary 16S primers, `wf-16s` accepts demultiplexed `FASTQ` files produced by any kit, including `SQK-NBD114.24`.
 
 ---
 
@@ -653,21 +675,63 @@ This interactive checkpoint reinforces five pivotal laboratory and computational
 * **Alpha Diversity (Within-sample Diversity):**
   * **Species Richness (S):** Total count of unique taxa detected in a sample.
   * **Shannon Index (H = -Σ pᵢ ln pᵢ):** Quantifies both richness and evenness; values decrease when a single taxon dominates.
-  * **Simpson Index (D = Σ pᵢ²):** Measures the probability that two randomly selected reads belong to the same taxon.
+  * **Simpson Index (D = Σ pᵢ²):** Measures the probability that two randomly selected reads belong to the same taxon (dominance index; values approach 1 when a single taxon dominates, and approach 0 in hyperdiverse communities).
+  * *Practical Note:* Oxford Nanopore documentation describes Simpson as scaling from "0 low to 1 high diversity" while defining D = Σ pᵢ². Check whether your specific EPI2ME report version prints classical Simpson D (dominance) or the complementary Gini-Simpson index (1 - D), which scales positively with diversity.
   * **Pielou’s Evenness (J = H / ln S):** Normalizes Shannon diversity on a scale from 0 (complete dominance) to 1 (perfect equitability).
 * **Beta Diversity (Between-sample Diversity):** Evaluates compositional turnover between distinct environments using Bray-Curtis dissimilarity, Jaccard distance, or phylogenetic UniFrac metrics visualized via Principal Coordinates Analysis (PCoA).
 
+#### Rarefaction, Normalization, and Library Depth
+EPI2ME `wf-16s` generates an interactive sample rarefaction curve plotting observed taxonomic richness against sequencing read depth per barcode. A curve that approaches an asymptote indicates that additional sequencing would discover few novel taxa, confirming that community richness has been adequately sampled.
+
+To enable fair comparisons across samples with uneven sequencing yields, `wf-16s` exports both the original raw count table and a **rarefied count table**, subsampled down to **95% of the total read count of the smallest sample library** in the run.
+
+Crucially, however, the **alpha diversity indices (Shannon and Simpson) displayed in the summary cards default to the original, non-rarefied counts**. Oxford Nanopore justifies this design by citing McMurdie & Holmes (2014), who demonstrated that rarefying (random subsampling without replacement) introduces artificial binomial variance, disproportionately discards valid biological reads, and diminishes statistical power in differential abundance testing. For rigorous downstream statistical comparisons, compositional transformations (e.g. centered log-ratio, CLR) or model-based variance-stabilizing methods (e.g. DESeq2 / ANCOM-BC) are recommended over random subsampling.
+
 > [!WARNING]
 > **Relative abundance is not population size.** If taxon A yields twice as many reads as taxon B, you cannot conclude that twice as many living cells were present:
-> 1. Ribosomal RNA gene copy numbers vary substantially between microbial genomes (from 1 copy in many oligotrophic taxa to >15 copies in spore-forming *Bacillus*).
+> 1. Ribosomal RNA gene copy numbers vary substantially between microbial genomes: from 1 copy in many oligotrophic taxa up to 21 copies in spore-forming bacilli (medians up to 19 copies in *Metabacillus* and *Bacillus*; rrnDB v5.8; Stoddard et al. 2015).
 > 2. Cell wall structures (Gram-positive peptidoglycan vs. Gram-negative membranes) cause unequal cell lysis efficiencies during DNA extraction.
 > 3. Amplicon sequence data are inherently compositional: percentages sum to 100%, meaning that an expansion in one taxon mathematically depresses the measured relative proportions of all other community members.
 
 ---
 
+### Chapter 13. Predictive Functional Profiling: From Taxonomy to Function (PICRUSt2 & FUNGuild)
+
+While amplicon sequencing answers the foundational question **"Who is there?"**, microbial ecologists frequently need to address the consequential follow-up question: **"What are they doing?"** Direct functional profiling requires shotgun metagenomics or metatranscriptomics. However, when working from amplicon data, computational inference tools—most notably **PICRUSt2** (for bacteria and archaea) and **FUNGuild** (for fungi)—can predict the functional potential of microbial communities by leveraging phylogenetic conservation and reference genome databases.
+
+#### 13.1 Bacterial Functional Inference: The PICRUSt2 Pipeline
+**PICRUSt2** (Phylogenetic Investigation of Communities by Reconstruction of Unobserved States; Douglas et al. 2020) predicts functional metabolic capabilities directly from full-length or short-read 16S rRNA sequence variants.
+
+The pipeline executes four algorithmic steps:
+1. **Phylogenetic Sequence Placement:** Full-length 16S amplicon sequences are aligned and placed into a reference phylogenetic tree of ~20,000 sequenced bacterial and archaeal genomes using `EPA-ng` (Barbera et al. 2019) and `GAPPA`. Full-length R10.4.1 reads (~1,500 bp) provide dramatically higher phylogenetic placement precision than short 250–450 bp reads.
+2. **Hidden State Prediction (HSP):** Using evolutionary modeling packages (such as `castor`; Louca & Doebeli 2018), PICRUSt2 reconstructs unobserved genomic traits across the tree, predicting 16S rRNA gene copy numbers and genomic abundances of functional gene families (e.g. KEGG Orthology [KO] groups, Enzyme Commission [EC] numbers, and COGs).
+3. **16S Copy-Number Normalization:** Observed raw amplicon read abundances are divided by the predicted 16S copy number for each taxon, mitigating the biological bias wherein high-copy-number organisms (e.g. *Bacillus*, *Clostridium*) appear artificially over-represented relative to single-copy oligotrophs.
+4. **Metabolic Pathway Inference:** Gene family abundances are mapped to structured metabolic pathways (MetaCyc pathway definitions; Caspi et al. 2018) via `MinPath` (Minimal Pathway Enumeration), yielding pathway abundance and pathway coverage tables.
+
+#### 13.2 Fungal Guild Annotation: FUNGuild
+For fungal ITS and 28S amplicon datasets, functional gene prediction from taxonomy is generally unreliable because fungal genomes exhibit massive structural plasticity and evolutionary divergence. Instead, **FUNGuild** (Nguyen et al. 2016) parses taxonomic assignments into ecological guilds based on an expert-curated database of fungal life-history traits:
+* **Trophic Modes:** *Pathotroph* (acquiring nutrients by damaging host cells, including animal and plant pathogens), *Saprotroph* (degrading non-living organic matter, such as wood decay fungi), and *Symbiotroph* (exchanging nutrients with living hosts, such as mycorrhizae and lichens).
+* **Confidence Rankings:** Each guild assignment is tagged as *Highly Probable*, *Probable*, or *Possible*, allowing researchers to filter out speculative ecological assignments.
+
+#### 13.3 Critical Scientific Evaluation: What Predictions Can and Cannot Claim
+Predictive metagenomics provides valuable hypotheses, but researchers must understand its strict methodological boundaries:
+
+#### Table 21b. Strengths and limitations of predictive functional profiling [LAB]
+| Analytical Capability | Critical Scientific Limitation & Risk of Over-Interpretation |
+|---|---|
+| **Formulates testable hypotheses** regarding community metabolic shifts (e.g. nitrogen cycling, sulfur reduction, carbohydrate degradation) | **Genomic potential is not expressed activity:** Amplicon-based tools predict the presence of genes in a genome, NOT active gene transcription (mRNA), protein translation, or enzymatic flux (DNA presence ≠ active function) |
+| **Normalizes for 16S copy number variation**, producing more realistic organismal proportions | **Copy-number normalization is statistically contested:** Operon copy numbers vary even within single species, and ancestral state reconstruction models carry substantial uncertainty for novel lineages |
+| **Highly accurate in well-characterized biomes** (e.g. human gut, standard lab strains) where reference genome databases are near-complete | **Nearest Sequenced Taxon Index (NSTI) inflation:** Predictions degrade severely in environmental, marine, extreme, or tropical soil biomes with high NSTI (>0.15), where uncharacterized taxa dominate |
+| **Cost-effective preliminary screening** across hundreds of multiplexed amplicon libraries | **Cannot detect strain-specific genomic islands or plasmids:** Horizontal gene transfer (HGT), phage integrations, and antibiotic resistance plasmids cannot be inferred from a conserved 16S gene |
+
+> [!WARNING]
+> **Scientific Realism in Reporting:** Never report PICRUSt2 results as "metabolic activities" or "active cellular functions". Always describe them as **"predicted metagenomic potential"**. Significant functional pathways identified by PICRUSt2 should be treated as candidates for validation through direct shotgun metagenomic sequencing, metatranscriptomics (RNA-seq), or metabolomics.
+
+---
+
 ## Part D – Critical Evaluation and Synthesis
 
-### Chapter 13. Limitations and Troubleshooting
+### Chapter 14. Limitations and Troubleshooting
 
 #### Table 22. Benefits versus methodological limitations in amplicon sequencing
 | Inherent Strengths | Methodological Limitations & Analytical Pitfalls |
@@ -691,7 +755,7 @@ This interactive checkpoint reinforces five pivotal laboratory and computational
 
 ---
 
-### Chapter 14. Summary, Synthesis and Further Reading
+### Chapter 15. Summary, Synthesis and Further Reading
 
 #### Core Takeaways
 1. **Targeted Strategy:** Amplicon sequencing is a marker-directed molecular census. Platform and marker selection determine the taxonomic boundary and biological resolution of the experiment.
@@ -875,31 +939,35 @@ When transitioning from full-length bacterial 16S sequencing to aquatic eDNA mon
 * Oxford Nanopore Technologies. *MinKNOW Technical Document* (`MITD_5000_v1_revAK_25Nov2024`).
 
 #### Literature Citations
-* Deamer D, Akeson M, Branton D. Three decades of nanopore sequencing. *Nat Biotechnol*. 2016;34(5):518–524. doi:[10.1038/nbt.3423](https://doi.org/10.1038/nbt.3423)
+* Barbera P, Kozlov AM, Czech L, et al. EPA-ng: massively parallel evolutionary placement of genetic sequences. *Syst Biol*. 2019;68(2):365–369. doi: 10.1093/sysbio/syy054
+* Caspi R, Billington R, Ferrer L, et al. The MetaCyc database of metabolic pathways and enzymes and the BioCyc collection of pathway/genome databases. *Nucleic Acids Res*. 2018;46(D1):D633–D639. doi: 10.1093/nar/gkx1072
+* Deamer D, Akeson M, Branton D. Three decades of nanopore sequencing. *Nat Biotechnol*. 2016;34(5):518–524. doi: 10.1038/nbt.3423
+* Douglas GM, Maffei VJ, Zaneveld JR, et al. PICRUSt2 for prediction of metagenome functions. *Nat Biotechnol*. 2020;38(6):685–688. doi: 10.1038/s41587-020-0548-6
 * Folmer O, Black M, Hoeh W, Lutz R, Vrijenhoek R. DNA primers for amplification of mitochondrial cytochrome c oxidase subunit I from diverse metazoan invertebrates. *Mol Mar Biol Biotechnol*. 1994;3(5):294–299.
-* Gloor GB, Macklaim JM, Pawlowsky-Glahn V, Egozcue JJ. Microbiome datasets are compositional: and this is not optional. *Front Microbiol*. 2017;8:2224. doi:[10.3389/fmicb.2017.02224](https://doi.org/10.3389/fmicb.2017.02224)
-* Hebert PDN, Cywinska A, Ball SL, deWaard JR. Biological identifications through DNA barcodes. *Proc R Soc B*. 2003;270(1512):313–321. doi:[10.1098/rspb.2002.2218](https://doi.org/10.1098/rspb.2002.2218)
-* Jain M, Olsen HE, Paten B, Akeson M. The Oxford Nanopore MinION: delivery of nanopore sequencing to the genomics community. *Genome Biol*. 2016;17:239. doi:[10.1186/s13059-016-1103-0](https://doi.org/10.1186/s13059-016-1103-0)
-* Johnson JS, Spakowicz DJ, Hong BY, et al. Evaluation of 16S rRNA gene sequencing for species and strain-level microbiome analysis. *Nat Commun*. 2019;10:5029. doi:[10.1038/s41467-019-13036-1](https://doi.org/10.1038/s41467-019-13036-1)
-* Kebschull JM, Zador AM. Sources of PCR-induced distortions in high-throughput sequencing data sets. *Nucleic Acids Res*. 2015;43(21):e143. doi:[10.1093/nar/gkv717](https://doi.org/10.1093/nar/gkv717)
-* Leray M, Yang JY, Meyer CP, Mills SC, Agudelo N, Ranwez V, Boehm JT, Machida RJ. A new versatile primer set targeting a short fragment of the mitochondrial COI region for metabarcoding metazoan diversity: application for characterizing coral reef fish gut contents. *Front Zool*. 2013;10:34. doi:[10.1186/1742-9994-10-34](https://doi.org/10.1186/1742-9994-10-34)
-* Li H. Minimap2: pairwise alignment for nucleotide sequences. *Bioinformatics*. 2018;34(18):3094–3100. doi:[10.1093/bioinformatics/bty191](https://doi.org/10.1093/bioinformatics/bty191)
-* Lu J, Breitwieser FP, Thielen P, Salzberg SL. Bracken: estimating species abundance in metagenomics data. *PeerJ Comput Sci*. 2017;3:e104. doi:[10.7717/peerj-cs.104](https://doi.org/10.7717/peerj-cs.104)
-* McMurdie PJ, Holmes S. Waste not, want not: why rarefying microbiome data is inadmissible. *PLoS Comput Biol*. 2014;10(4):e1003531. doi:[10.1371/journal.pcbi.1003531](https://doi.org/10.1371/journal.pcbi.1003531)
-* Miya M, Sato Y, Fukunaga T, et al. MiFish, a set of universal PCR primers for metabarcoding environmental DNA from fishes: detection of more than 230 subtropical marine species. *R Soc Open Sci*. 2015;2(7):150088. doi:[10.1098/rsos.150088](https://doi.org/10.1098/rsos.150088)
-* O’Leary NA, Wright MW, Brister JR, et al. Reference sequence (RefSeq) database at NCBI: current status, taxonomic expansion, and functional annotation. *Nucleic Acids Res*. 2016;44(D1):D733–D745. doi:[10.1093/nar/gkv1189](https://doi.org/10.1093/nar/gkv1189)
-* Quast C, Pruesse E, Yilmaz P, et al. The SILVA ribosomal RNA gene database project: improved data processing and web-based tools. *Nucleic Acids Res*. 2013;41(D1):D590–D596. doi:[10.1093/nar/gks1219](https://doi.org/10.1093/nar/gks1219)
-* Rang FJ, Kloosterman WP, de Ridder J. From squiggle to basepair: computational approaches for improving nanopore sequencing read accuracy. *Genome Biol*. 2018;19:90. doi:[10.1186/s13059-018-1462-9](https://doi.org/10.1186/s13059-018-1462-9)
-* Salter SJ, Cox MJ, Turek EM, et al. Reagent and laboratory contamination can critically impact sequence-based microbiome analyses. *BMC Biol*. 2014;12:87. doi:[10.1186/s12915-014-0087-z](https://doi.org/10.1186/s12915-014-0087-z)
-* Schoch CL, Seifert KA, Huhndorf S, et al. Nuclear ribosomal internal transcribed spacer (ITS) region as a universal DNA barcode marker for Fungi. *Proc Natl Acad Sci USA*. 2012;109(16):6241–6246. doi:[10.1073/pnas.1117018109](https://doi.org/10.1073/pnas.1117018109)
-* Stoddard SF, Smith BJ, Hein R, Roller BRK, Schmidt TM. rrnDB: improved tools for interpreting rRNA gene abundance in bacteria and archaea and a new foundation for future development. *Nucleic Acids Res*. 2015;43(Database issue):D593–D598. doi:[10.1093/nar/gku1201](https://doi.org/10.1093/nar/gku1201)
+* Gloor GB, Macklaim JM, Pawlowsky-Glahn V, Egozcue JJ. Microbiome datasets are compositional: and this is not optional. *Front Microbiol*. 2017;8:2224. doi: 10.3389/fmicb.2017.02224
+* Hebert PDN, Cywinska A, Ball SL, deWaard JR. Biological identifications through DNA barcodes. *Proc R Soc B*. 2003;270(1512):313–321. doi: 10.1098/rspb.2002.2218
+* Jain M, Olsen HE, Paten B, Akeson M. The Oxford Nanopore MinION: delivery of nanopore sequencing to the genomics community. *Genome Biol*. 2016;17:239. doi: 10.1186/s13059-016-1103-0
+* Johnson JS, Spakowicz DJ, Hong BY, et al. Evaluation of 16S rRNA gene sequencing for species and strain-level microbiome analysis. *Nat Commun*. 2019;10:5029. doi: 10.1038/s41467-019-13036-1
+* Kebschull JM, Zador AM. Sources of PCR-induced distortions in high-throughput sequencing data sets. *Nucleic Acids Res*. 2015;43(21):e143. doi: 10.1093/nar/gkv717
+* Leray M, Yang JY, Meyer CP, Mills SC, Agudelo N, Ranwez V, Boehm JT, Machida RJ. A new versatile primer set targeting a short fragment of the mitochondrial COI region for metabarcoding metazoan diversity: application for characterizing coral reef fish gut contents. *Front Zool*. 2013;10:34. doi: 10.1186/1742-9994-10-34
+* Li H. Minimap2: pairwise alignment for nucleotide sequences. *Bioinformatics*. 2018;34(18):3094–3100. doi: 10.1093/bioinformatics/bty191
+* Louca S, Doebeli M. Efficient comparative phylogenetics on large trees. *Bioinformatics*. 2018;34(6):1053–1055. doi: 10.1093/bioinformatics/bty054
+* Lu J, Breitwieser FP, Thielen P, Salzberg SL. Bracken: estimating species abundance in metagenomics data. *PeerJ Comput Sci*. 2017;3:e104. doi: 10.7717/peerj-cs.104
+* McMurdie PJ, Holmes S. Waste not, want not: why rarefying microbiome data is inadmissible. *PLoS Comput Biol*. 2014;10(4):e1003531. doi: 10.1371/journal.pcbi.1003531
+* Miya M, Sato Y, Fukunaga T, et al. MiFish, a set of universal PCR primers for metabarcoding environmental DNA from fishes: detection of more than 230 subtropical marine species. *R Soc Open Sci*. 2015;2(7):150088. doi: 10.1098/rsos.150088
+* Nguyen NH, Song Z, Bates ST, et al. FUNGuild: an open annotation tool for parsing fungal community datasets by ecological guild. *Fungal Ecol*. 2016;20:241–248. doi: 10.1016/j.funeco.2015.06.006
+* O’Leary NA, Wright MW, Brister JR, et al. Reference sequence (RefSeq) database at NCBI: current status, taxonomic expansion, and functional annotation. *Nucleic Acids Res*. 2016;44(D1):D733–D745. doi: 10.1093/nar/gkv1189
+* Quast C, Pruesse E, Yilmaz P, et al. The SILVA ribosomal RNA gene database project: improved data processing and web-based tools. *Nucleic Acids Res*. 2013;41(D1):D590–D596. doi: 10.1093/nar/gks1219
+* Rang FJ, Kloosterman WP, de Ridder J. From squiggle to basepair: computational approaches for improving nanopore sequencing read accuracy. *Genome Biol*. 2018;19:90. doi: 10.1186/s13059-018-1462-9
+* Salter SJ, Cox MJ, Turek EM, et al. Reagent and laboratory contamination can critically impact sequence-based microbiome analyses. *BMC Biol*. 2014;12:87. doi: 10.1186/s12915-014-0087-z
+* Schoch CL, Seifert KA, Huhndorf S, et al. Nuclear ribosomal internal transcribed spacer (ITS) region as a universal DNA barcode marker for Fungi. *Proc Natl Acad Sci USA*. 2012;109(16):6241–6246. doi: 10.1073/pnas.1117018109
+* Stoddard SF, Smith BJ, Hein R, Roller BRK, Schmidt TM. rrnDB: improved tools for interpreting rRNA gene abundance in bacteria and archaea and a new foundation for future development. *Nucleic Acids Res*. 2015;43(Database issue):D593–D598. doi: 10.1093/nar/gku1201
 * rrnDB: Ribosomal RNA Operon Copy Number Database. Version 5.8. University of Michigan; 2023. Available from: [https://rrndb.umms.med.umich.edu/](https://rrndb.umms.med.umich.edu/) (Accessed November 2026; documents 1 to 21 copies per bacterial genome).
-* Wick RR, Judd LM, Holt KE. Performance of neural network basecalling tools for Oxford Nanopore sequencing. *Genome Biol*. 2019;20(1):129. doi:[10.1186/s13059-019-1727-y](https://doi.org/10.1186/s13059-019-1727-y)
-* Taberlet P, Coissac E, Hajibabaei M, Rieseberg LH. Environmental DNA (Introduction to a special issue). *Mol Ecol*. 2012;21(8):1789–1793. doi:[10.1111/j.1365-294X.2012.05542.x](https://doi.org/10.1111/j.1365-294X.2012.05542.x)
-* Taberlet P, Coissac E, Pompanon F, et al. Power and limitations of the chloroplast trnL (UAA) intron for plant DNA barcoding. *Nucleic Acids Res*. 2007;35(3):e14. doi:[10.1093/nar/gkl938](https://doi.org/10.1093/nar/gkl938)
-* Wang Y, Zhao Y, Bollas A, Wang Y, Au KF. Nanopore sequencing technology, bioinformatics and applications. *Nat Biotechnol*. 2021;39(11):1348–1365. doi:[10.1038/s41587-021-01108-x](https://doi.org/10.1038/s41587-021-01108-x)
-* Wood DE, Lu J, Langmead B. Improved metagenomic analysis with Kraken 2. *Genome Biol*. 2019;20:257. doi:[10.1186/s13059-019-1891-0](https://doi.org/10.1186/s13059-019-1891-0)
-
+* Wick RR, Judd LM, Holt KE. Performance of neural network basecalling tools for Oxford Nanopore sequencing. *Genome Biol*. 2019;20(1):129. doi: 10.1186/s13059-019-1727-y
+* Taberlet P, Coissac E, Hajibabaei M, Rieseberg LH. Environmental DNA (Introduction to a special issue). *Mol Ecol*. 2012;21(8):1789–1793. doi: 10.1111/j.1365-294X.2012.05542.x
+* Taberlet P, Coissac E, Pompanon F, et al. Power and limitations of the chloroplast trnL (UAA) intron for plant DNA barcoding. *Nucleic Acids Res*. 2007;35(3):e14. doi: 10.1093/nar/gkl938
+* Wang Y, Zhao Y, Bollas A, Wang Y, Au KF. Nanopore sequencing technology, bioinformatics and applications. *Nat Biotechnol*. 2021;39(11):1348–1365. doi: 10.1038/s41587-021-01108-x
+* Wood DE, Lu J, Langmead B. Improved metagenomic analysis with Kraken 2. *Genome Biol*. 2019;20:257. doi: 10.1186/s13059-019-1891-0
 #### Software and Version Register `[LAB]`
 #### Table 32. Analysis run tracking register
 | Component | Deployed Version | Execution Parameters / Checksums |

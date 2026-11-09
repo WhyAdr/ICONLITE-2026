@@ -7,7 +7,10 @@
 - [x] **Buffer Handling:** SFB wash specified for retaining amplicons; absolute ethanol ban after adapter ligation enforced to protect motor proteins.
 - [x] **Flow Cell Hardware:** PromethION architecture specified (3,000 channels addressing 12,000 pores; 5,000 active pore warranty minimum; bubble clearing draw-back; ≥10 min pre-run rest).
 - [x] **Literature & Citations:** All citations verified with complete volume, page, and DOI records:
+  - Barbera et al. 2019 (*Syst Biol* 68:365–369, EPA-ng)
+  - Caspi et al. 2018 (*Nucleic Acids Res* 46:D633–D639, MetaCyc)
   - Deamer et al. 2016 (*Nat Biotechnol* 34:518–524)
+  - Douglas et al. 2020 (*Nat Biotechnol* 38:685–688, PICRUSt2)
   - Folmer et al. 1994 (*Mol Mar Biol Biotechnol* 3:294–299)
   - Gloor et al. 2017 (*Front Microbiol* 8:2224)
   - Hebert et al. 2003 (*Proc R Soc B* 270:313–321)
@@ -16,14 +19,16 @@
   - Kebschull & Zador 2015 (*Nucleic Acids Res* 43:e143)
   - Leray et al. 2013 (*Front Zool* 10:34)
   - Li 2018 (*Bioinformatics* 34:3094–3100)
+  - Louca & Doebeli 2018 (*Bioinformatics* 34:1053–1055, castor)
   - Lu et al. 2017 (*PeerJ Comput Sci* 3:e104)
   - McMurdie & Holmes 2014 (*PLoS Comput Biol* 10:e1003531)
   - Miya et al. 2015 (*R Soc Open Sci* 2:150088)
+  - Nguyen et al. 2016 (*Fungal Ecol* 20:241–248, FUNGuild)
   - O'Leary et al. 2016 (*Nucleic Acids Res* 44:D733–D745)
   - Quast et al. 2013 (*Nucleic Acids Res* 41:D590–D596)
   - Rang et al. 2018 (*Genome Biol* 19:90)
   - Salter et al. 2014 (*BMC Biol* 12:87)
-  - Schoch et al. 2012 (*Proc Natl Acad Sci USA* 109:6241–6246)
+  - Schoch CL et al. 2012 (*Proc Natl Acad Sci USA* 109:6241–6246)
   - Stoddard et al. 2015 (*Nucleic Acids Res* 43:D593–D598) & rrnDB v5.8 release
   - Taberlet et al. 2007 (*Nucleic Acids Res* 35:e14, trnL)
   - Taberlet et al. 2012 (*Mol Ecol* 21:1789–1793, eDNA)
@@ -40,5 +45,5 @@
   - Real MinKNOW run setup and sequencing dashboard screenshots
   - Real EPI2ME workflow selection and `wf-16s` setup screenshots
   - 8 common amplicon marker schematics (16S, 16S-23S, ITS, 18S, COI, 12S, trnL)
-- [x] **Presentation Deck Synchronization:** 23 slides in `ICONLITE_ONT_Amplicon_Sequencing_Workshop.pptx` fully synchronized with `ICONLITE_Slide_Storyboard.md`. Recurring footers and slide numbers removed; spoken script notes complete (86–131 words/slide; 2,410 words total); timing budget rebalanced to ~50 min presentation + 10 min discussion/buffer.
-- [x] **Handbook Output Documents:** Clean typography, real Word heading hierarchy, formatted table of contents, Unicode math expressions, and PDF generation verified.
+- [x] **Presentation Deck Synchronization:** 25 slides in `ICONLITE_ONT_Amplicon_Sequencing_Workshop.pptx` fully synchronized with `ICONLITE_Slide_Storyboard.md`. Includes dedicated Slide 8 (Kit Selection: NBD vs MAB vs 16S) and Slide 21 (Predictive Metagenomics: PICRUSt2 & FUNGuild). Spoken script notes complete across all slides; timing budget rebalanced to ~50 min presentation + 10 min discussion/buffer.
+- [x] **Handbook Output Documents:** Clean typography, real Word heading hierarchy, formatted table of contents with new Chapter 13 (Predictive Functional Profiling), verified `wf-16s` CLI flags and offline guides, harmonized rrnDB copy numbers (1–21 copies), explained rarefaction curve and 95% rarefied counts, clean DOI rendering without raw brackets, Unicode math expressions, and PDF generation verified.

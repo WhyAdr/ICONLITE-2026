@@ -121,6 +121,21 @@ def main():
     remove_footers_and_numbers(prs)
     print("Removed recurring footers and slide numbering across all slides.")
 
+    # Ensure 25 slides exist
+    if len(prs.slides) == 23:
+        layout = prs.slide_layouts[1]
+        s_new1 = prs.slides.add_slide(layout)
+        sldIdLst = prs.slides._sldIdLst
+        elem = list(sldIdLst)[-1]
+        sldIdLst.remove(elem)
+        sldIdLst.insert(7, elem)
+        
+        s_new2 = prs.slides.add_slide(layout)
+        sldIdLst = prs.slides._sldIdLst
+        elem = list(sldIdLst)[-1]
+        sldIdLst.remove(elem)
+        sldIdLst.insert(20, elem)
+
     # 1. Slide 1 (Cover)
     s1 = prs.slides[0]
     for shape in s1.shapes:
@@ -226,8 +241,28 @@ def main():
         "For large multiplexed amplicon cohorts, a single PromethION flow cell generates millions of reads, reducing per-sample sequencing costs significantly. [Time: 2 min]"
     )
 
-    # 8. Slide 8 (Laboratory Workflow Big Picture)
+    # 8. Slide 8 (Selecting Your ONT Library Kit: Native vs. Dedicated 16S)
     s8 = prs.slides[7]
+    for shp in list(s8.shapes):
+        if not (shp.is_placeholder and shp.placeholder_format.type == 1):
+            remove_shape(shp)
+    for shp in s8.shapes:
+        if shp.is_placeholder and shp.placeholder_format.type == 1:
+            shp.text_frame.text = "Selecting Your ONT Library Kit: Native vs. Dedicated 16S"
+            for p in shp.text_frame.paragraphs:
+                p.font.name = "Arial"
+                p.font.size = Pt(24)
+                p.font.bold = True
+                p.font.color.rgb = DARK_BLUE
+    add_card(s8, "SQK-NBD114.24 / .96", "Native Barcoding Kit (Our Workshop Choice)\n• Chemistry: Enzymatic ligation (dA-tailing + blunt/TA barcode ligation)\n• Amplicons: Universal for ANY marker (16S, 18S, ITS, COI, 12S, custom)\n• PCR Strategy: User performs custom PCR; zero PCR in library prep\n• Key Advantage: Preserves native amplicon stoichiometry without kit primer bias\n• Scope: Foundation for eDNA, fungi, vertebrates, and multi-marker projects", 0.6, 1.4, 3.85, 5.0, fill_color=PALE_BLUE, border_color=BLUE, title_color=DARK_BLUE)
+    add_card(s8, "SQK-MAB114.24", "16S Barcoding Kit 24 V14 (Dedicated 16S)\n• Chemistry: PCR-based barcoding with rapid adapter attachment\n• Amplicons: Bacterial 16S rRNA ONLY (pre-mixed 27F / 1492R primers)\n• PCR Strategy: 4-primer or two-step PCR directly adds barcode tags\n• Turnaround: Fastest hands-on protocol (~2.0–2.5 hours total)\n• Major Limitation: Strictly locked to bacterial 16S; cannot barcode other loci", 4.75, 1.4, 3.85, 5.0, fill_color=WHITE, border_color=TEAL, title_color=TEAL)
+    add_card(s8, "Kit Lineage & EPI2ME [LAB]", "Evolutionary History & Compatibility\n• Lineage: SQK-16S024 (legacy) → SQK-16S114.24 → SQK-MAB114.24\n• wf-16s Support: While docs list MAB/16S as defaults, wf-16s processes demultiplexed FASTQs from ANY kit [LAB]\n• Pedagogical Role: NBD teaches universal ligation chemistry that generalizes\n• Capacity: 24-plex standard; expandable to 96-plex with SQK-NBD114.96\n• Recommendation: Master NBD ligation first for cross-domain flexibility", 8.9, 1.4, 3.85, 5.0, fill_color=PALE_AMBER, border_color=AMBER, title_color=DARK_BLUE)
+    update_notes(s8,
+        "Before diving into our hands-on protocol, we must address library kit selection. Oxford Nanopore provides two distinct barcoding routes: dedicated 16S kits and native barcoding kits. Dedicated kits—evolving from legacy SQK-16S024 to SQK-16S114.24 and currently SQK-MAB114.24—use PCR-based barcoding with bundled 27F/1492R primers. They offer rapid 2-hour turnaround for routine bacterial monitoring, but cannot barcode fungal ITS, eukaryotic 18S, or fish 12S amplicons. In this workshop, we specifically teach Native Barcoding Kit 24 V14 (SQK-NBD114.24). Native barcoding uses enzymatic ligation without PCR, accommodating any user-defined amplicon. Crucially, while EPI2ME wf-16s lists MAB as its default protocol, it accepts demultiplexed FASTQs from any kit, making NBD the ideal foundation for multi-marker research. [Time: 2 min]"
+    )
+
+    # 9. Slide 9 (Laboratory Workflow Big Picture)
+    s9 = prs.slides[8]
     update_notes(s8,
         "Now we transition into the wet-lab workflow. Our laboratory strategy uses ONT's Native Barcoding Kit 24 V14 (SQK-NBD114.24) on a PromethION. "
         "Notice a key terminology distinction: ONT calls this library preparation 'PCR-free' because once amplicons enter the workflow, barcodes and adapters "
@@ -236,8 +271,8 @@ def main():
         "an extraction blank to detect kit contamination, a PCR no-template control (NTC) for aerosol carryover, and a positive mock community. [Time: 2.5 min]"
     )
 
-    # 9. Slide 9 (H1: PCR Amplicon Evaluation)
-    s9 = prs.slides[8]
+    # 10. Slide 10 (H1: PCR Amplicon Evaluation)
+    s10 = prs.slides[9]
     update_notes(s9,
         "In Section 9.1, our first operational rule is that enzymatic ligation kinetics depend strictly on the molar concentration of DNA termini (femtomoles), "
         "not on mass in nanograms. Equal mass does not mean equal molecules! One hundred nanograms of a short 500 bp amplicon contains three times as many "
@@ -246,8 +281,8 @@ def main():
         "Always quantify with Qubit fluorometry—never NanoDrop, which overestimates DNA in the presence of free dNTPs. [Time: 2.5 min]"
     )
 
-    # 10. Slide 10 (H2: End-Prep)
-    s10 = prs.slides[9]
+    # 11. Slide 11 (H2: End-Prep)
+    s11 = prs.slides[10]
     update_notes(s10,
         "In step H2, amplicons undergo end-preparation using NEBNext Ultra II reagents. Amplicons generated by proofreading polymerases possess blunt or ragged ends. "
         "The end-prep master mix repairs these ends, phosphorylates the 5-prime termini, and appends a single 3-prime deoxyadenosine (dA) overhang. "
@@ -255,8 +290,8 @@ def main():
         "Following reaction cleanup with 1.0× AMPure XP magnetic beads and two fresh 80% ethanol washes, we elute the purified dA-tailed amplicons in 10 µL of nuclease-free water. [Time: 2 min]"
     )
 
-    # 11. Slide 11 (H3: Native Barcode Ligation)
-    s11 = prs.slides[10]
+    # 12. Slide 12 (H3: Native Barcode Ligation)
+    s12 = prs.slides[11]
     update_notes(s11,
         "In step H3, we multiplex our samples using Native Barcoding Kit 24. Each sample receives a unique double-stranded barcode (NB01 through NB24) "
         "for cohesive TA ligation with dA-tailed amplicons. The reaction incubates with Blunt/TA ligase for 20 minutes at room temperature. "
@@ -265,8 +300,8 @@ def main():
         "We pool 24 µL per sample—yielding 576 µL for a 24-plex run—and purify with a 0.4× AMPure XP bead cleanup, washing twice with Short Fragment Buffer (SFB). [Time: 2.5 min]"
     )
 
-    # 12. Slide 12 (H4: Sequencing Adapter Ligation)
-    s12 = prs.slides[11]
+    # 13. Slide 13 (H4: Sequencing Adapter Ligation)
+    s13 = prs.slides[12]
     update_notes(s12,
         "In step H4, we attach the Native Adapter (NA) to our pooled barcoded amplicons. Do not confuse barcodes with adapters! "
         "Barcodes identify sample biological origin; the Native Adapter carries the vital motor protein that docks into the nanopore and unwinds DNA. "
@@ -275,8 +310,8 @@ def main():
         "to drop to near zero when sequencing begins. The final library is eluted in Elution Buffer (EB). [Time: 2.5 min]"
     )
 
-    # 13. Slide 13 (H5: Flow Cell Priming and Loading)
-    s13 = prs.slides[12]
+    # 14. Slide 14 (H5: Flow Cell Priming and Loading)
+    s14 = prs.slides[13]
     update_notes(s13,
         "In step H5, we prime and load the PromethION flow cell. The priming solution combines 1,170 µL Flow Cell Flush (FCF) with 30 µL Flow Cell Tether (FCT). "
         "The tether consists of lipid-conjugated oligonucleotides that concentrate library molecules directly at the synthetic membrane surface near the pores. "
@@ -285,8 +320,8 @@ def main():
         "Allow the loaded flow cell to rest for at least 10 minutes before starting the run to maximize library availability across pores. [Time: 2.5 min]"
     )
 
-    # 14. Slide 14 (H6: MinKNOW Run Setup)
-    s14 = prs.slides[13]
+    # 15. Slide 15 (H6: MinKNOW Run Setup)
+    s15 = prs.slides[14]
     # Remove old placeholder shapes and overlapping chips
     for shape in list(s14.shapes):
         if shape.has_text_frame:
@@ -305,8 +340,8 @@ def main():
         "We set outputs to generate both raw POD5 signal files—essential for long-term re-basecalling—and demultiplexed FASTQ files for immediate analysis. [Time: 2 min]"
     )
 
-    # 15. Slide 15 (H7: EPI2ME wf-16s)
-    s15 = prs.slides[14]
+    # 16. Slide 16 (H7: EPI2ME wf-16s)
+    s16 = prs.slides[15]
     # Remove old placeholder shapes
     for shape in list(s15.shapes):
         if shape.has_text_frame and "Insert real wf-16s" in shape.text_frame.text:
@@ -323,8 +358,8 @@ def main():
         "You must adjust min_len and supply a dedicated reference database. The pipeline outputs an interactive HTML report and taxon abundance matrices. [Time: 2.5 min]"
     )
 
-    # 16. Slide 16 (H8: Five Critical Decisions)
-    s16 = prs.slides[15]
+    # 17. Slide 17 (H8: Five Critical Decisions)
+    s17 = prs.slides[16]
     # Remove old sparse cards and replace with rich concrete questions
     for shape in list(s16.shapes):
         if shape.has_text_frame:
@@ -354,8 +389,8 @@ def main():
         "Every single step has a direct biophysical consequence. [Time: 3 min]"
     )
 
-    # 17. Slide 17 (Signal to FASTQ)
-    s17 = prs.slides[16]
+    # 18. Slide 18 (Signal to FASTQ)
+    s18 = prs.slides[17]
     for shape in list(s17.shapes):
         if shape.has_text_frame and "Classic event-segmented" in shape.text_frame.text:
             remove_shape(shape)
@@ -370,8 +405,8 @@ def main():
         "whether that sequence represents a living bacterium, dead relic DNA, or an extraction contaminant depends entirely on downstream analysis. [Time: 2 min]"
     )
 
-    # 18. Slide 18 (Read QC & Taxonomic Classification)
-    s18 = prs.slides[17]
+    # 19. Slide 19 (Read QC & Taxonomic Classification)
+    s19 = prs.slides[18]
     update_notes(s18,
         "Once reads pass quality filtering, how do we assign taxonomy? In wf-16s, you choose between two classification philosophies: "
         "minimap2 performs full-length pairwise alignment against reference sequences. It requires strict identity (≥95%) and coverage (≥90%), "
@@ -380,8 +415,8 @@ def main():
         "Neither tool is universally superior; choose alignment for high-confidence species calls and k-mer matching for rapid diagnostic screening. [Time: 2.5 min]"
     )
 
-    # 19. Slide 19 (Critical Community Interpretation)
-    s19 = prs.slides[18]
+    # 20. Slide 20 (Critical Community Interpretation)
+    s20 = prs.slides[19]
     update_notes(s19,
         "When inspecting community composition bar plots, we must avoid the central trap of microbiome research: "
         "[Cue: Ask audience] If taxon A shows twice as many sequence reads as taxon B, did the sample contain twice as many bacterial cells? "
@@ -391,8 +426,28 @@ def main():
         "Always treat read counts as relative sequence shares, never absolute cell abundances. [Time: 2.5 min]"
     )
 
-    # 20. Slide 20 (R9 vs R10 Pore Architecture & Basecalling)
-    s20 = prs.slides[19]
+    # 21. Slide 21 (From Taxonomy to Function: Predictive Metagenomics with PICRUSt2 & FUNGuild)
+    s21 = prs.slides[20]
+    for shp in list(s21.shapes):
+        if not (shp.is_placeholder and shp.placeholder_format.type == 1):
+            remove_shape(shp)
+    for shp in s21.shapes:
+        if shp.is_placeholder and shp.placeholder_format.type == 1:
+            shp.text_frame.text = "From Taxonomy to Function: Predictive Metagenomics"
+            for p in shp.text_frame.paragraphs:
+                p.font.name = "Arial"
+                p.font.size = Pt(24)
+                p.font.bold = True
+                p.font.color.rgb = DARK_BLUE
+    add_card(s21, "Bacterial Metabolic Potential: PICRUSt2", "Phylogenetic Hidden-State Reconstruction\n• Phylogenetic Placement: Aligns full-length 16S reads into ~20,000 reference genomes via EPA-ng / GAPPA\n• Hidden State Prediction: Castor evolutionary models infer unobserved KO and MetaCyc gene families\n• Copy-Number Normalization: Divides observed counts by predicted 16S operon counts (1–21 copies)\n• Pathway Inference: Maps predicted gene families into structured MetaCyc pathways via MinPath", 0.6, 1.4, 5.9, 3.1, fill_color=PALE_BLUE, border_color=BLUE, title_color=DARK_BLUE)
+    add_card(s21, "Fungal Ecological Guilds: FUNGuild", "Trophic Strategy & Ecological Trait Mapping\n• Taxonomic Guild Mapping: Links fungal ITS/28S taxa to curated ecological life-history traits\n• Trophic Modes: Parses taxa into Pathotroph (host damage), Saprotroph (decay), or Symbiotroph (mutualist)\n• Confidence Tiers: Qualifies assignments as Highly Probable, Probable, or Possible\n• Ecological Role: Translates raw fungal taxonomic inventories into functional niche dynamics", 6.8, 1.4, 5.9, 3.1, fill_color=WHITE, border_color=TEAL, title_color=TEAL)
+    add_card(s21, "Critical Scientific Realism: What Predictions Can & Cannot Claim [LAB]", "Methodological Boundaries & Best Practices\n• Genomic Potential ≠ Expressed Activity: Predicts DNA coding capacity, NOT active transcription (mRNA) or enzyme activity\n• Nearest Sequenced Taxon Index (NSTI): Accuracy degrades severely in uncharacterized biomes (soil, marine; NSTI > 0.15)\n• Hypothesis Generator: Copy-number normalization is model-dependent; validate candidate pathways via shotgun metagenomics or RNA-seq", 0.6, 4.65, 12.1, 1.85, fill_color=PALE_AMBER, border_color=AMBER, title_color=DARK_BLUE)
+    update_notes(s21,
+        "On Slide 21, we bridge from 'Who is there?' to 'What are they doing?' using predictive metagenomics. For bacteria, PICRUSt2 places full-length 16S reads into a reference phylogenetic tree using EPA-ng, infers unobserved gene families via ancestral state reconstruction with castor, normalizes for 16S copy number variation, and predicts MetaCyc metabolic pathways. For fungi, FUNGuild classifies taxa into trophic guilds—pathotrophs, saprotrophs, and symbiotrophs. However, critical realism is essential: genomic capacity does not equate to active gene expression or enzymatic flux. Furthermore, accuracy drops sharply in non-human biomes with high Nearest Sequenced Taxon Index (NSTI > 0.15). Treat predictive profiles as hypothesis generators that must be validated with direct shotgun metagenomics or metatranscriptomics. [Time: 2 min]"
+    )
+
+    # 22. Slide 22 (R9 vs R10 Pore Architecture & Basecalling)
+    s22 = prs.slides[21]
     for shape in list(s20.shapes):
         if shape.has_text_frame:
             txt = shape.text_frame.text
@@ -437,8 +492,8 @@ def main():
         "modal simplex raw read accuracy reaches Q20+ (~99.2%), with duplex reads reaching ~Q30 (>99.7%). [Time: 2.5 min]"
     )
 
-    # 21. Slide 21 (Adapting Workflows for eDNA)
-    s21 = prs.slides[20]
+    # 23. Slide 23 (Adapting Workflows for eDNA)
+    s23 = prs.slides[22]
     for shape in list(s21.shapes):
         if shape.has_text_frame:
             txt = shape.text_frame.text
@@ -480,8 +535,8 @@ def main():
         "natively handles ~170 bp fragments without these modifications. [Time: 2.5 min]"
     )
 
-    # 22. Slide 22 (Strengths, Limitations, Pitfalls - Contrast Restored to High-Contrast White Text)
-    s22 = prs.slides[21]
+    # 24. Slide 24 (Strengths, Limitations, Pitfalls)
+    s24 = prs.slides[23]
     for shape in s22.shapes:
         if shape.has_text_frame:
             txt = shape.text_frame.text
@@ -525,8 +580,8 @@ def main():
         "Always evaluate negative controls first: if your extraction blank has reads, flag those taxa before interpreting your biological samples! [Time: 2.5 min]"
     )
 
-    # 23. Slide 23 (Key Takeaways & Session Handoff - High-Contrast Stark White Text on Dark Navy Fill)
-    s23 = prs.slides[22]
+    # 25. Slide 25 (Key Takeaways & Session Handoff)
+    s25 = prs.slides[24]
     for shape in s23.shapes:
         if shape.has_text_frame:
             txt = shape.text_frame.text

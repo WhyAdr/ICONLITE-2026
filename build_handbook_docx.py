@@ -129,22 +129,23 @@ def add_field(p, field_name):
     p._p.append(fldSimple)
 
 def parse_inline_formatting(paragraph, text, default_size=10.0, default_color=INK, default_bold=False, default_italic=False, font_name="Arial"):
-    """Parse bold, italic, code, and math tokens with clean Unicode rendering and recursive nesting support."""
+    """Parse bold, italic, code, links, and math tokens with clean Unicode rendering and recursive nesting support."""
     if not text:
         return
     raw = text
-    # Tokenize: **bold**, *italic*, `code`, $$math$$, $math$
-    tokens = re.split(r'(\*\*.*?\*\*|\*[^\*]+?\*|`[^`]+?`|\$\$.*?\$\$|\$[^\$]+?\$)', raw)
+    # Tokenize: **bold**, *italic*, `code`, [link](url), $$math$$, $math$
+    tokens = re.split(r'(\*\*.*?\*\*|\*[^\*]+?\*|`[^`]+?`|\[[^\]]+\]\([^)]+\)|\$\$.*?\$\$|\$[^\$]+?\$)', raw)
     for token in tokens:
         if not token:
             continue
         if token.startswith('**') and token.endswith('**') and len(token) >= 4:
             inner = token[2:-2]
-            # Recursively parse inner tokens if code, italic, or math are present
-            if any(delim in inner for delim in ['`', '*', '$']):
+            # Recursively parse inner tokens if code, italic, link, or math are present
+            if any(delim in inner for delim in ['`', '*', '$', '](']):
                 parse_inline_formatting(paragraph, inner, default_size=default_size, default_color=default_color, default_bold=True, default_italic=default_italic, font_name=font_name)
             else:
                 clean_inner = inner.replace('`', '').replace('$', '')
+                clean_inner = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', clean_inner)
                 if clean_inner:
                     run = paragraph.add_run(clean_inner)
                     run.font.name = font_name
@@ -154,10 +155,11 @@ def parse_inline_formatting(paragraph, text, default_size=10.0, default_color=IN
                     run.italic = default_italic
         elif token.startswith('*') and token.endswith('*') and len(token) >= 2:
             inner = token[1:-1]
-            if any(delim in inner for delim in ['`', '**', '$']):
+            if any(delim in inner for delim in ['`', '**', '$', '](']):
                 parse_inline_formatting(paragraph, inner, default_size=default_size, default_color=default_color, default_bold=default_bold, default_italic=True, font_name=font_name)
             else:
                 clean_inner = inner.replace('`', '').replace('$', '')
+                clean_inner = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', clean_inner)
                 if clean_inner:
                     run = paragraph.add_run(clean_inner)
                     run.font.name = font_name
@@ -173,6 +175,17 @@ def parse_inline_formatting(paragraph, text, default_size=10.0, default_color=IN
             run.font.color.rgb = RGBColor(0x1B, 0x3E, 0x5F)
             run.bold = default_bold
             run.italic = default_italic
+        elif token.startswith('[') and '](' in token and token.endswith(')'):
+            m_link = re.match(r'^\[([^\]]+)\]\(([^)]+)\)$', token)
+            if m_link:
+                link_text = m_link.group(1).replace('`', '').replace('$', '')
+                run = paragraph.add_run(link_text)
+                run.font.name = font_name
+                run.font.size = Pt(default_size)
+                run.font.color.rgb = BLUE
+                run.font.underline = True
+                run.bold = default_bold
+                run.italic = default_italic
         elif (token.startswith('$$') and token.endswith('$$') and len(token) >= 4) or (token.startswith('$') and token.endswith('$') and len(token) >= 2):
             raw_math = token[2:-2] if token.startswith('$$') else token[1:-1]
             math_display = clean_math_text(raw_math)
@@ -183,8 +196,9 @@ def parse_inline_formatting(paragraph, text, default_size=10.0, default_color=IN
             run.bold = (default_bold or token.startswith('$$'))
             run.italic = not token.startswith('$$')
         else:
-            # Plain text: clean any stray backticks or unescaped math symbols
+            # Plain text: clean any stray backticks, unescaped math symbols, or residual link brackets
             clean_token = token.replace('`', '').replace('$', '')
+            clean_token = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', clean_token)
             if clean_token:
                 run = paragraph.add_run(clean_token)
                 run.font.name = font_name
