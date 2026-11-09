@@ -129,8 +129,9 @@ def add_field(p, field_name):
     p._p.append(fldSimple)
 
 def parse_inline_formatting(paragraph, text, default_size=10.0, default_color=INK, default_bold=False, default_italic=False, font_name="Arial"):
-    """Parse bold, italic, code, and math tokens with clean Unicode rendering."""
-    # Strip any stray single backticks that are not part of a pair
+    """Parse bold, italic, code, and math tokens with clean Unicode rendering and recursive nesting support."""
+    if not text:
+        return
     raw = text
     # Tokenize: **bold**, *italic*, `code`, $$math$$, $math$
     tokens = re.split(r'(\*\*.*?\*\*|\*[^\*]+?\*|`[^`]+?`|\$\$.*?\$\$|\$[^\$]+?\$)', raw)
@@ -138,21 +139,35 @@ def parse_inline_formatting(paragraph, text, default_size=10.0, default_color=IN
         if not token:
             continue
         if token.startswith('**') and token.endswith('**') and len(token) >= 4:
-            run = paragraph.add_run(token[2:-2])
-            run.font.name = font_name
-            run.font.size = Pt(default_size)
-            run.font.color.rgb = default_color
-            run.bold = True
-            run.italic = default_italic
+            inner = token[2:-2]
+            # Recursively parse inner tokens if code, italic, or math are present
+            if any(delim in inner for delim in ['`', '*', '$']):
+                parse_inline_formatting(paragraph, inner, default_size=default_size, default_color=default_color, default_bold=True, default_italic=default_italic, font_name=font_name)
+            else:
+                clean_inner = inner.replace('`', '').replace('$', '')
+                if clean_inner:
+                    run = paragraph.add_run(clean_inner)
+                    run.font.name = font_name
+                    run.font.size = Pt(default_size)
+                    run.font.color.rgb = default_color
+                    run.bold = True
+                    run.italic = default_italic
         elif token.startswith('*') and token.endswith('*') and len(token) >= 2:
-            run = paragraph.add_run(token[1:-1])
-            run.font.name = font_name
-            run.font.size = Pt(default_size)
-            run.font.color.rgb = default_color
-            run.bold = default_bold
-            run.italic = True
+            inner = token[1:-1]
+            if any(delim in inner for delim in ['`', '**', '$']):
+                parse_inline_formatting(paragraph, inner, default_size=default_size, default_color=default_color, default_bold=default_bold, default_italic=True, font_name=font_name)
+            else:
+                clean_inner = inner.replace('`', '').replace('$', '')
+                if clean_inner:
+                    run = paragraph.add_run(clean_inner)
+                    run.font.name = font_name
+                    run.font.size = Pt(default_size)
+                    run.font.color.rgb = default_color
+                    run.bold = default_bold
+                    run.italic = True
         elif token.startswith('`') and token.endswith('`') and len(token) >= 2:
-            run = paragraph.add_run(token[1:-1])
+            inner = token[1:-1].replace('`', '')
+            run = paragraph.add_run(inner)
             run.font.name = "Courier New"
             run.font.size = Pt(max(8.5, default_size - 1.0))
             run.font.color.rgb = RGBColor(0x1B, 0x3E, 0x5F)
@@ -168,14 +183,15 @@ def parse_inline_formatting(paragraph, text, default_size=10.0, default_color=IN
             run.bold = (default_bold or token.startswith('$$'))
             run.italic = not token.startswith('$$')
         else:
-            # Plain text: clean any stray backticks or unescaped symbols
-            clean_token = token.replace('`', '')
-            run = paragraph.add_run(clean_token)
-            run.font.name = font_name
-            run.font.size = Pt(default_size)
-            run.font.color.rgb = default_color
-            run.bold = default_bold
-            run.italic = default_italic
+            # Plain text: clean any stray backticks or unescaped math symbols
+            clean_token = token.replace('`', '').replace('$', '')
+            if clean_token:
+                run = paragraph.add_run(clean_token)
+                run.font.name = font_name
+                run.font.size = Pt(default_size)
+                run.font.color.rgb = default_color
+                run.bold = default_bold
+                run.italic = default_italic
 
 def optimize_image_for_word(img_path, max_dim=1500, quality=85):
     """Resize huge images to a crisp print-friendly dimension and return temp path or original."""

@@ -7,7 +7,7 @@ All visual assets referenced below have been curated, placed in `/assets`, and e
 ## 1. Laboratory & Experimental Visuals
 | Asset File | Target Placement | Description / Source | Attribution / License |
 |---|---|---|---|
-| `assets/common-amplicon-markers/16S-rRNA-PCR-gel-image.jpg` | Slide 9 (H1), Handbook Section 9.1 (Fig. 9.1) | Real 1.5% agarose gel electrophoresis verifying sharp ~1.5 kb 16S rRNA PCR amplicon band | Laboratory archive / Research SOP |
+| `assets/common-amplicon-markers/16S-rRNA-PCR-gel-image.jpg` | Slide 9 (H1), Handbook Section 9.1 (Fig. 9.1) | Real 1.5% agarose gel electrophoresis verifying sharp ~1.5 kb 16S rRNA PCR amplicon band | Research laboratory agarose gel archive / Educational reference |
 | `assets/ampure-xp-beads-workflow.png` | Handbook Section 9.2 (Fig. 9.2) | Magnetic SPRI bead cleanup workflow (PEG/NaCl binding, wash, elution) | Molecular biology illustration |
 | `assets/ONT-NBD-RBK-kit-reagent-layout.png` | Handbook Section 9.3 (Fig. 9.3) | Reagent tube layout for Native Barcoding Kit (SQK-NBD114.24) | Technical laboratory layout |
 
@@ -18,9 +18,9 @@ All visual assets referenced below have been curated, placed in `/assets`, and e
 |---|---|---|---|
 | `assets/nanopore-sequencing-principle-Wang2021.png` | Slide 6, Handbook Section 6.1 (Fig. 6.1) | Nanopore biosensing overview: motor protein, synthetic membrane, ASIC sensor chip, and ionic current trace | Adapted from Wang et al., 2021 (*Nat Biotechnol* 39:1348–1365; doi:10.1038/s41587-021-01108-x) |
 | `assets/ETH-Zurich-nanopore-sequencing-illustration.png` | Handbook Section 6.1 (Fig. 6.2) | Physical schematic of single-molecule translocation under constant voltage | ETH Zurich Single-Molecule Biophysics |
-| `assets/ONTR9vsR10-nanopore-diagram.png` | Slide 20, Handbook Section 6.2 (Fig. 6.3) | Structural comparison between R9.4.1 (single constriction) and R10.4.1 (dual-reader head spaced ~1.4 nm apart) | ONT pore engineering technical schematic |
+| `assets/ONTR9vsR10-nanopore-diagram.png` | Slide 20, Handbook Section 6.2 (Fig. 6.3) | Structural comparison between R9.4.1 (single constriction) and R10.4.1 (dual-reader head architecture) | ONT pore engineering technical schematic |
 | `assets/ONT-basecalling-neural-network-diagram.png` | Slide 20, Handbook Section 6.3 (Fig. 6.4) | Deep neural network architecture: PyTorch CNN feature extraction + Transformer/CRF temporal sequence decoding | Dorado basecalling architecture schematic |
-| `assets/ONT-signal-to-sequence-basecalling.png` | Slide 17, Handbook Section 6.3 (Fig. 6.5) | Real-time conversion of continuous ionic squiggles into basecalled FASTQ records with Phred scores | Basecalling signal transformation schematic |
+| `assets/ONT-signal-to-sequence-basecalling.png` | Slide 17, Handbook Section 6.3 (Fig. 6.5) | Signal-to-sequence conversion schematic (classic event-segmented schematic view; modern Dorado neural models decode raw continuous signal directly without prior event segmentation; Wick et al. 2019) | Basecalling signal transformation schematic |
 
 ---
 

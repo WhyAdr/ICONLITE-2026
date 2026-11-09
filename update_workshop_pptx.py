@@ -45,7 +45,7 @@ def add_card(slide, title, body, x, y, w, h, fill_color=PALE_BLUE, border_color=
     p0 = tf.paragraphs[0]
     p0.text = title
     p0.font.name = "Arial"
-    p0.font.size = Pt(11.5)
+    p0.font.size = Pt(12.5)
     p0.font.bold = True
     p0.font.color.rgb = title_color
     p0.space_after = Pt(4)
@@ -53,7 +53,7 @@ def add_card(slide, title, body, x, y, w, h, fill_color=PALE_BLUE, border_color=
     p1 = tf.add_paragraph()
     p1.text = body
     p1.font.name = "Arial"
-    p1.font.size = Pt(10)
+    p1.font.size = Pt(11.0)
     p1.font.color.rgb = body_color
     return shape
 
@@ -259,7 +259,7 @@ def main():
     s11 = prs.slides[10]
     update_notes(s11,
         "In step H3, we multiplex our samples using Native Barcoding Kit 24. Each sample receives a unique double-stranded barcode (NB01 through NB24) "
-        "carrying a complementary thymidine overhang for TA ligation. The reaction incubates with Blunt/TA ligase for 20 minutes at room temperature. "
+        "for cohesive TA ligation with dA-tailed amplicons. The reaction incubates with Blunt/TA ligase for 20 minutes at room temperature. "
         "Immediately following ligation, we add 4 µL of EDTA (blue cap) to quench ligase activity before combining samples. "
         "Crucial warning: Once samples are pooled into a single tube, mislabeled samples cannot be recovered! "
         "We pool 24 µL per sample—yielding 576 µL for a 24-plex run—and purify with a 0.4× AMPure XP bead cleanup, washing twice with Short Fragment Buffer (SFB). [Time: 2.5 min]"
@@ -329,36 +329,43 @@ def main():
     for shape in list(s16.shapes):
         if shape.has_text_frame:
             txt = shape.text_frame.text
-            if any(k in txt for k in ["Q1", "Q2", "Q3", "Q4", "Q5", "Answer by hands"]):
+            if any(k in txt for k in ["Q1", "Q2", "Q3", "Q4", "Q5", "Interactive Checkpoint", "Answer by hands"]):
                 remove_shape(shape)
     
-    # Add 5 rich scenario cards
+    # Add 5 rich scenario cards (12.5 pt bold title, 11 pt body text)
     q_data = [
         ("Q1 · Stoichiometry", "1,500 bp amplicon at 30 ng/µL.\nMass & volume for 200 fmol?\n\n→ A: 198 ng (6.6 µL)\n→ B: 66 ng (2.2 µL)\n→ C: 300 ng (10.0 µL)", 0.6),
-        ("Q2 · Controls", "6 samples + blank + NTC.\nHow many barcodes to use, and when do we pool?\n\n→ A: 6 barcodes; pool at start\n→ B: 8 barcodes; pool post-EDTA\n→ C: 8 barcodes; pool pre-ligation", 3.05),
+        ("Q2 · Controls [LAB]", "6 samples + blank + NTC [LAB].\nTotal barcodes to allocate?\n\n→ A: 6 barcodes; pool at start\n→ B: 8 barcodes; pool post-EDTA\n→ C: 8 barcodes; pool pre-ligation", 3.05),
         ("Q3 · Size Selection", "Purifying a 1.5 kb amplicon library.\nWhich wash buffer is required?\n\n→ A: SFB (mandatory for <3 kb)\n→ B: LFB (enriches ≥3 kb)\n→ C: 80% Ethanol", 5.5),
         ("Q4 · Flow Cell Loading", "PromethION library loading mix composition & rest time?\n\n→ A: 100 µL SB + 68 LIB + 32 DNA\n→ B: 200 µL pure DNA library\n→ Rest ≥10 min before run", 7.95),
         ("Q5 · Lab Diagnosis", "Student accidentally washed beads with 80% EtOH after adapter ligation.\nOutcome?\n\n→ A: Yield improves 20%\n→ B: Pore occupancy ~0%\n→ C: No effect on run", 10.4)
     ]
     for title, body, x in q_data:
         add_card(s16, title, body, x, 1.5, 2.3, 4.6, fill_color=WHITE, border_color=BLUE, title_color=DARK_BLUE, body_color=INK)
-    add_note_card(s16, "Interactive Checkpoint: Quick audience poll before moving to data interpretation (Answers: Q1:A, Q2:B, Q3:A, Q4:A, Q5:B)", 0.6, 6.25, 12.1, 0.45, font_size=11, bold=True, fill_color=PALE_AMBER, border_color=AMBER, text_color=INK)
+    # Bottom banner strictly without printing answers! Answers remain in speaker notes & handbook only!
+    add_note_card(s16, "Interactive Checkpoint: Quick 3-minute audience poll across critical workflow decisions (Discuss options, then reveal answers)", 0.6, 6.25, 12.1, 0.45, font_size=11.5, bold=True, fill_color=PALE_AMBER, border_color=AMBER, text_color=INK)
     update_notes(s16,
         "Let's test our understanding with a quick 3-minute interactive checkpoint across five critical workflow decisions. "
         "[Ask audience]: For Q1, calculating mass for 200 fmol of 1,500 bp DNA: who says A, 198 ng? Correct! 200 × 1500 × 660 / 10^6 = 198 ng. "
-        "For Q2, always allocate barcodes to your extraction blank and NTC, pooling strictly after quenching with EDTA. "
-        "For Q3, SFB is mandatory; LFB selectively enriches fragments over 3 kb and depletes amplicons. "
-        "For Q4, PromethION uses 100 µL SB, 68 µL LIB, and 32 µL library, resting for ≥10 minutes. "
-        "And for Q5: washing with ethanol after adapter ligation denatures the motor protein, causing pore occupancy to collapse to near 0%. "
+        "For Q2, always allocate barcodes to your extraction blank and NTC [LAB], pooling strictly after quenching with EDTA (Answer B). "
+        "For Q3, SFB is mandatory; LFB selectively enriches fragments over 3 kb and depletes amplicons (Answer A). "
+        "For Q4, PromethION uses 100 µL SB, 68 µL LIB, and 32 µL library, resting for ≥10 minutes before starting run (Answer A). "
+        "And for Q5: washing with ethanol after adapter ligation denatures the motor protein, causing pore occupancy to collapse to near 0% (Answer B). "
         "Every single step has a direct biophysical consequence. [Time: 3 min]"
     )
 
     # 17. Slide 17 (Signal to FASTQ)
     s17 = prs.slides[16]
+    for shape in list(s17.shapes):
+        if shape.has_text_frame and "Classic event-segmented" in shape.text_frame.text:
+            remove_shape(shape)
+    # Add caption clarifying event-calling vs direct raw signal decoding
+    add_note_card(s17, "Classic event-segmented view; modern Dorado neural models decode raw electrical current directly without prior event segmentation (Wick et al., 2019).", 0.6, 6.6, 12.1, 0.35, font_size=9.5, bold=False, fill_color=WHITE, border_color=LIGHT_GRAY, text_color=GRAY)
     update_notes(s17,
         "Now we shift to the dry-lab: how continuous ionic current measurements become digital nucleotide sequences. "
-        "Dorado's deep neural networks process raw POD5 current traces. Convolutional layers extract local signal features, while Transformer layers "
-        "model long-range temporal dependencies. The decoder assigns individual bases along with Phred quality scores, where Q20 represents 99% accuracy. "
+        "Historically, nanopores used event segmentation before basecalling; modern Dorado neural networks process raw POD5 current traces directly. "
+        "Convolutional layers extract local signal features, while Transformer layers model long-range temporal dependencies. "
+        "The decoder assigns individual bases along with Phred quality scores, where Q20 represents 99% accuracy. "
         "Always remember: Basecalling produces nucleotide sequences, not biological identifications! A high Q-score means the machine accurately read the DNA; "
         "whether that sequence represents a living bacterium, dead relic DNA, or an extraction contaminant depends entirely on downstream analysis. [Time: 2 min]"
     )
@@ -379,14 +386,13 @@ def main():
         "When inspecting community composition bar plots, we must avoid the central trap of microbiome research: "
         "[Cue: Ask audience] If taxon A shows twice as many sequence reads as taxon B, did the sample contain twice as many bacterial cells? "
         "The answer is an emphatic NO. First, bacterial genomes vary widely in 16S ribosomal RNA gene copy numbers—from 1 copy in many oligotrophic taxa "
-        "up to 21 copies in spore-forming bacilli, as documented in rrnDB v5 by Stoddard et al. (2015). A single Bacillus cell produces 10 to 15 times more PCR amplicons than a single Pseudomonas cell! "
+        "up to 21 copies in spore-forming bacilli, as documented in the rrnDB database (v5.x, reporting 1–21 copies; Stoddard et al., 2015). A single Bacillus cell produces 10 to 15 times more PCR amplicons than a single Pseudomonas cell! "
         "Second, differential lysis efficiencies and PCR primer biases distort ratios. Third, amplicon data are compositional percentages summing to 100%. "
         "Always treat read counts as relative sequence shares, never absolute cell abundances. [Time: 2.5 min]"
     )
 
     # 20. Slide 20 (R9 vs R10 Pore Architecture & Basecalling)
     s20 = prs.slides[19]
-    # Remove old shapes except title
     for shape in list(s20.shapes):
         if shape.has_text_frame:
             txt = shape.text_frame.text
@@ -394,7 +400,6 @@ def main():
                 continue
         remove_shape(shape)
     
-    # Title
     t_shape = None
     for shape in s20.shapes:
         if shape.has_text_frame and "Pore Architecture" in shape.text_frame.text:
@@ -409,11 +414,11 @@ def main():
     p.font.bold = True
     p.font.color.rgb = DARK_BLUE
 
-    # 3 crisp bullets on the left (15 pt font)
+    # 3 crisp bullets on the left (14.5 pt font), with softened homopolymer claim and dropped ~1.4 nm spacing
     s20_bullets = [
         "Pore Geometry: R9.4.1 single reader head (CsgG, ~4–5 bp) evolved into R10.4.1 dual reader heads spaced vertically along the pore lumen.",
-        "Homopolymer Resolution: Dual consecutive reading breaks current ambiguity, accurately resolving homopolymer tracts up to ~9–10 bp.",
-        "Accuracy Milestone: Kit 14 chemistry + Dorado Super-Accuracy (SUP) neural basecalling delivers modal simplex raw accuracy of Q20+ (~99.0–99.3%) and duplex >Q25."
+        "Homopolymer Resolution: Dual consecutive reading breaks current ambiguity, significantly improving homopolymer resolution up to ~9–10 bp.",
+        "Accuracy Milestone: Kit 14 chemistry + Dorado Super-Accuracy (SUP) neural basecalling delivers modal simplex raw accuracy of Q20+ (~99.2%) and duplex reads reaching ~Q30 (>99.7%)."
     ]
     add_bullet_list(s20, s20_bullets, 0.6, 1.4, 5.0, 4.4, font_size=14.5, space_after=14)
 
@@ -428,8 +433,8 @@ def main():
         "Here on Slide 20, we explore how Oxford Nanopore achieved its dramatic accuracy leap from ~90% in early chemistries to over 99% (Q20+) today. "
         "The breakthrough centers on pore engineering: R9.4.1 pores had a single constriction where 4 to 5 bases sat simultaneously, causing current plateaus "
         "and indel errors in homopolymers. In contrast, R10.4.1 pores feature dual reader heads spaced vertically inside the barrel. Each nucleotide is read twice "
-        "at shifted intervals, breaking homopolymer degeneracy up to ~9–10 base pairs. Combined with Dorado's PyTorch convolutional and Transformer deep learning models, "
-        "modal simplex raw read accuracy exceeds Q20 (99.0–99.3%), with duplex reads reaching >Q25 (>99.7%). [Time: 2.5 min]"
+        "at shifted intervals, breaking homopolymer degeneracy and significantly improving homopolymer resolution up to ~9–10 base pairs. Combined with Dorado's PyTorch convolutional and Transformer deep learning models, "
+        "modal simplex raw read accuracy reaches Q20+ (~99.2%), with duplex reads reaching ~Q30 (>99.7%). [Time: 2.5 min]"
     )
 
     # 21. Slide 21 (Adapting Workflows for eDNA)
@@ -475,13 +480,12 @@ def main():
         "natively handles ~170 bp fragments without these modifications. [Time: 2.5 min]"
     )
 
-    # 22. Slide 22 (Strengths, Limitations, Pitfalls)
+    # 22. Slide 22 (Strengths, Limitations, Pitfalls - Contrast Restored to High-Contrast White Text)
     s22 = prs.slides[21]
-    # Update text to reflect functional inference and core questions
     for shape in s22.shapes:
         if shape.has_text_frame:
             txt = shape.text_frame.text
-            if "Real-time data" in txt:
+            if "Real-time data" in txt or "Strengths" in txt:
                 shape.text_frame.text = (
                     "Strengths & Capabilities\n"
                     "• Full-length operon sequencing resolves species & strains\n"
@@ -492,10 +496,12 @@ def main():
                 )
                 for p_idx, p in enumerate(shape.text_frame.paragraphs):
                     p.font.name = "Arial"
-                    p.font.size = Pt(12) if p_idx > 0 else Pt(14)
+                    p.font.size = Pt(13.5) if p_idx == 0 else Pt(11.5)
                     p.font.bold = (p_idx == 0)
-                    p.font.color.rgb = DARK_BLUE if p_idx == 0 else INK
-            elif "Primer bias" in txt:
+                    p.font.color.rgb = WHITE  # Crisp white text on Teal background
+                    for r in p.runs:
+                        r.font.color.rgb = WHITE
+            elif "Primer bias" in txt or "Limitations" in txt:
                 shape.text_frame.text = (
                     "Limitations & Critical Pitfalls\n"
                     "• PCR primer amplification bias distorts true taxon ratios\n"
@@ -506,9 +512,11 @@ def main():
                 )
                 for p_idx, p in enumerate(shape.text_frame.paragraphs):
                     p.font.name = "Arial"
-                    p.font.size = Pt(12) if p_idx > 0 else Pt(14)
+                    p.font.size = Pt(13.5) if p_idx == 0 else Pt(11.5)
                     p.font.bold = (p_idx == 0)
-                    p.font.color.rgb = DARK_BLUE if p_idx == 0 else INK
+                    p.font.color.rgb = WHITE  # Crisp white text on Amber/Dark background
+                    for r in p.runs:
+                        r.font.color.rgb = WHITE
     update_notes(s22,
         "On Slide 22, we synthesize our capabilities against methodological pitfalls. Amplicon sequencing empowers culture-independent surveillance, "
         "allowing us to identify organisms and infer their functional potential—such as using PICRUSt2 for predicted metabolic pathways or FUNGuild for ecological guilds, "
@@ -517,19 +525,31 @@ def main():
         "Always evaluate negative controls first: if your extraction blank has reads, flag those taxa before interpreting your biological samples! [Time: 2.5 min]"
     )
 
-    # 23. Slide 23 (Key Takeaways & Session Handoff)
+    # 23. Slide 23 (Key Takeaways & Session Handoff - High-Contrast Stark White Text on Dark Navy Fill)
     s23 = prs.slides[22]
-    # Update cards and prompt
     for shape in s23.shapes:
         if shape.has_text_frame:
             txt = shape.text_frame.text
-            if "Discussion:" in txt:
+            if "Session Handoff:" in txt or "Discussion:" in txt:
                 shape.text_frame.text = "Session Handoff: Pak Hilman · Fish eDNA Metabarcoding in Anthropogenic Ecosystems"
                 p = shape.text_frame.paragraphs[0]
                 p.font.name = "Arial"
-                p.font.size = Pt(12)
+                p.font.size = Pt(13)
                 p.font.bold = True
-                p.font.color.rgb = DARK_BLUE
+                p.font.color.rgb = WHITE  # Crisp Stark White on Dark Navy bar!
+                for r in p.runs:
+                    r.font.name = "Arial"
+                    r.font.size = Pt(13)
+                    r.font.bold = True
+                    r.font.color.rgb = WHITE
+    update_notes(s23,
+        "To conclude: amplicon sequencing is an interconnected chain of decisions from biological question to taxonomic classification. "
+        "Marker selection defines your taxonomic scope; stoichiometric precision (femtomoles) governs enzymatic ligation; "
+        "proper priming and bubble elimination safeguard flow cell pores; and neural basecalling yields calibrated sequences that must be interpreted "
+        "with compositionality and copy-number awareness. "
+        "We now have 10 full minutes for audience questions and discussion, after which I am delighted to hand the stage over to Pak Hilman, "
+        "who will share real-world field case studies using Illumina short-read sequencing for fish eDNA metabarcoding. Thank you very much! [Time: 2 min]"
+    )
     update_notes(s23,
         "To conclude: amplicon sequencing is an interconnected chain of decisions from biological question to taxonomic classification. "
         "Marker selection defines your taxonomic scope; stoichiometric precision (femtomoles) governs enzymatic ligation; "

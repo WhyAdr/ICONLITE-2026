@@ -24,10 +24,11 @@
   - Rang et al. 2018 (*Genome Biol* 19:90)
   - Salter et al. 2014 (*BMC Biol* 12:87)
   - Schoch et al. 2012 (*Proc Natl Acad Sci USA* 109:6241–6246)
-  - Stoddard et al. 2015 (*Nucleic Acids Res* 43:D593–D598, rrnDB v5)
+  - Stoddard et al. 2015 (*Nucleic Acids Res* 43:D593–D598) & rrnDB v5.8 release
   - Taberlet et al. 2007 (*Nucleic Acids Res* 35:e14, trnL)
   - Taberlet et al. 2012 (*Mol Ecol* 21:1789–1793, eDNA)
   - Wang et al. 2021 (*Nat Biotechnol* 39:1348–1365)
+  - Wick et al. 2019 (*Genome Biol* 20:129)
   - Wood et al. 2019 (*Genome Biol* 20:257, Kraken 2)
 - [x] **Asset Integration:** All visual assets embedded across deck and handbook:
   - Real 16S agarose gel photograph (`16S-rRNA-PCR-gel-image.jpg`)
